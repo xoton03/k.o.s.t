@@ -177,6 +177,7 @@ if (modalRef) {
         if (val.length === 5) {
             val = val.toUpperCase();
             e.target.value = val;
+            e.target.blur(); // Dismiss keyboard on mobile
             
             searchLoader.classList.remove('hidden');
             colorGroup.classList.add('hidden');
