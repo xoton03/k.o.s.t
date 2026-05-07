@@ -218,6 +218,16 @@ input:focus {
     box-shadow: 0 0 0 1px var(--accent-cyan);
 }
 
+/* Blink the Emplacement field when empty */
+@keyframes blink-empty {
+    0%, 100% { border-color: var(--border-dim) !important; box-shadow: none; }
+    50%       { border-color: #EAB308 !important; box-shadow: 0 0 8px rgba(234, 179, 8, 0.4); }
+}
+
+#emplacement:placeholder-shown:not(:focus) {
+    animation: blink-empty 1.2s ease-in-out infinite;
+}
+
 .btn-search {
     background: var(--surface-slate);
     border: 1px solid var(--border-dim);
