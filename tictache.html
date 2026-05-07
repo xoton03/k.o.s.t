@@ -308,16 +308,28 @@
                     <!-- Collection tag: outside the white card -->
                     <div id="barcode-collection-display"></div>
 
-                    <!-- Quantity + Print -->
-                    <div style="display:flex; gap:0.75rem; align-items:flex-end;">
-                        <div style="flex:0 0 100px;">
-                            <label class="tt-label">Quantité</label>
-                            <input type="number" id="tt-quantity" class="tt-input" value="1" min="1" max="100" style="text-align:center; font-size:1.3rem;">
+                    <!-- Quantity +/- + Buttons -->
+                    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+
+                        <!-- Quantity row with +/- -->
+                        <div style="display:flex; align-items:center; gap:0; border:1px solid #333;">
+                            <button id="btn-qty-minus" style="width:48px; height:48px; background:#1a1a1a; color:#fff; border:none; font-size:1.4rem; font-weight:900; cursor:pointer; flex-shrink:0; transition:background 0.15s;" onmouseover="this.style.background='#22C55E20'" onmouseout="this.style.background='#1a1a1a'">−</button>
+                            <input type="number" id="tt-quantity" class="tt-input" value="1" min="1" max="100" style="text-align:center; font-size:1.4rem; font-weight:900; border:none; border-left:1px solid #333; border-right:1px solid #333; flex:1; height:48px; padding:0;">
+                            <button id="btn-qty-plus" style="width:48px; height:48px; background:#1a1a1a; color:#fff; border:none; font-size:1.4rem; font-weight:900; cursor:pointer; flex-shrink:0; transition:background 0.15s;" onmouseover="this.style.background='#22C55E20'" onmouseout="this.style.background='#1a1a1a'">+</button>
                         </div>
-                        <button id="btn-print" class="tt-btn-print" style="flex:1;">
-                            <i data-lucide="printer" class="w-5 h-5"></i>
-                            IMPRIMER
+
+                        <!-- Local print -->
+                        <button id="btn-print" class="tt-btn-print" style="background:#1e293b; color:#94a3b8; font-size:0.7rem;">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            Imprimer localement
                         </button>
+
+                        <!-- Remote print (main CTA) -->
+                        <button id="btn-remote-print" class="tt-btn-print">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                            LANCER L'IMPRESSION À DISTANCE
+                        </button>
+
                     </div>
 
                 </div>
@@ -380,6 +392,7 @@
     // ============================================================
     const SUPABASE_URL = "https://jphzmgscxpejcyjlnspq.supabase.co";
     const SUPABASE_KEY = "sb_publishable_gshF6Y08DYJYO9c8Z_Cv2Q_9nEZr7J9";
+    const GAS_PRINT_URL = "https://script.google.com/macros/s/AKfycbxPIhweJ51FptVFcCqAX28poGYlR10TCjZaVmhOij6rPmK8H8Hl33RWg3k3jTfGJiIb/exec";
 
     async function supabaseFetch(table, select = '*', filters = {}, options = {}) {
         let url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}`;
@@ -622,6 +635,61 @@
     if (mobileMenuTrigger) mobileMenuTrigger.addEventListener('click', openDrawer);
     btnCloseDrawer.addEventListener('click', closeDrawer);
     navBackdrop.addEventListener('click', closeDrawer);
+
+    // ============================================================
+    // QUANTITY +/- BUTTONS
+    // ============================================================
+    document.getElementById('btn-qty-minus').addEventListener('click', () => {
+        const input = document.getElementById('tt-quantity');
+        const val = parseInt(input.value) || 1;
+        if (val > 1) input.value = val - 1;
+    });
+    document.getElementById('btn-qty-plus').addEventListener('click', () => {
+        const input = document.getElementById('tt-quantity');
+        const val = parseInt(input.value) || 1;
+        if (val < 100) input.value = val + 1;
+    });
+
+    // ============================================================
+    // REMOTE PRINT FUNCTION
+    // ============================================================
+    document.getElementById('btn-remote-print').addEventListener('click', async () => {
+        if (!currentBarcode) return;
+        const btn = document.getElementById('btn-remote-print');
+        const qty = parseInt(document.getElementById('tt-quantity').value) || 1;
+        const details = `${currentRef} - ${ttColor.value} - ${ttSize.value}`;
+
+        // Visual feedback: loading state
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> ENVOI EN COURS...';
+        lucide.createIcons();
+
+        try {
+            const payload = {
+                action: 'REMOTE_PRINT',
+                barcode: currentBarcode,
+                details: details,
+                quantity: qty
+            };
+
+            await fetch(GAS_PRINT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // GAS requires no-cors
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            // no-cors means we can't read the response, assume success
+            showToast(`✅ Ordre envoyé au bureau ! (${qty} étiquette${qty > 1 ? 's' : ''})`, 'success');
+        } catch (err) {
+            console.error('Remote print error:', err);
+            showToast('Erreur d\'envoi — vérifiez votre connexion', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> LANCER L\'IMPRESSION À DISTANCE';
+            lucide.createIcons();
+        }
+    });
 
     // Re-init icons after dynamic content
     lucide.createIcons();
