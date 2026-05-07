@@ -89,22 +89,16 @@ main {
 }
 
 #clock-container {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    cursor: move;
-    resize: both;
+    position: relative;
+    z-index: 10;
+    cursor: default;
     overflow: hidden;
-    min-width: 120px;
-    min-height: 45px;
-    max-width: 500px;
-    max-height: 200px;
-    box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05), 0 10px 40px rgba(0,0,0,0.8);
+    min-width: 130px;
+    box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    transition: all 0.3s ease;
 }
 
 @media (max-width: 768px) {
