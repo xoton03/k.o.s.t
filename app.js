@@ -80,23 +80,23 @@ lucide.createIcons();
 // Update Clock
 function updateClock() {
     const now = new Date();
+    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const secStr = now.getSeconds().toString().padStart(2, '0');
+    const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+
+    // Desktop clock
     const timeElement = document.getElementById('current-time');
     const secondsElement = document.getElementById('current-seconds');
     const dateElement = document.getElementById('current-date');
-    
-    if (timeElement) {
-        timeElement.textContent = now.toLocaleTimeString('fr-FR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    if (secondsElement) {
-        secondsElement.textContent = now.getSeconds().toString().padStart(2, '0');
-    }
-    if (dateElement) {
-        const options = { day: '2-digit', month: 'short', year: 'numeric' };
-        dateElement.textContent = now.toLocaleDateString('fr-FR', options).replace('.', '');
-    }
+    if (timeElement) timeElement.textContent = timeStr;
+    if (secondsElement) secondsElement.textContent = secStr;
+    if (dateElement) dateElement.textContent = dateStr;
+
+    // Mobile compact clock
+    const timeMobile = document.getElementById('current-time-mobile');
+    const dateMobile = document.getElementById('current-date-mobile');
+    if (timeMobile) timeMobile.textContent = timeStr;
+    if (dateMobile) dateMobile.textContent = dateStr;
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -657,15 +657,16 @@ document.addEventListener('DOMContentLoaded', () => {
         actualiserCloud();
     }, 1000);
 
-    // Draggable & Resizable Clock Logic
+    // Draggable & Resizable Clock Logic (Desktop only)
     const clock = document.getElementById('clock-container');
-    if (clock) {
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    
+    if (clock && !isTouchDevice) {
         // Dragging
         let isDragging = false;
         let offsetLeft, offsetTop;
 
         clock.addEventListener('mousedown', (e) => {
-            // Only drag if not clicking the resize handle (usually bottom-right corner)
             const rect = clock.getBoundingClientRect();
             const isInResizeHandle = (e.clientX > rect.right - 20 && e.clientY > rect.bottom - 20);
             
@@ -681,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isDragging) {
                 clock.style.left = `${e.clientX - offsetLeft}px`;
                 clock.style.top = `${e.clientY - offsetTop}px`;
-                clock.style.right = 'auto'; // Disable right anchoring
+                clock.style.right = 'auto';
             }
         });
 
@@ -697,7 +698,6 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let entry of entries) {
                 const width = entry.contentRect.width;
                 const height = entry.contentRect.height;
-                // Calculate font size based on smallest dimension
                 const fontSize = Math.min(width / 4.5, height / 1.5);
                 timeTxt.style.fontSize = `${fontSize}px`;
                 secTxt.style.fontSize = `${fontSize / 3}px`;
