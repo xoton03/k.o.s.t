@@ -81,11 +81,21 @@ lucide.createIcons();
 function updateClock() {
     const now = new Date();
     const timeElement = document.getElementById('current-time');
+    const secondsElement = document.getElementById('current-seconds');
+    const dateElement = document.getElementById('current-date');
+    
     if (timeElement) {
         timeElement.textContent = now.toLocaleTimeString('fr-FR', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
+    }
+    if (secondsElement) {
+        secondsElement.textContent = now.getSeconds().toString().padStart(2, '0');
+    }
+    if (dateElement) {
+        const options = { day: '2-digit', month: 'short', year: 'numeric' };
+        dateElement.textContent = now.toLocaleDateString('fr-FR', options).replace('.', '');
     }
 }
 setInterval(updateClock, 1000);

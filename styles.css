@@ -57,6 +57,14 @@ main {
     overflow: hidden; /* Prevent global scroll */
 }
 
+#clock-container {
+    box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05), 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#current-time {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
 .sidebar {
     width: 350px;
     border-right: 1px solid var(--border-dim);
