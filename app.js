@@ -7,11 +7,18 @@ const SUPABASE_URL = "https://jphzmgscxpejcyjlnspq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_gshF6Y08DYJYO9c8Z_Cv2Q_9nEZr7J9";
 
 // Supabase Helper
-async function supabaseFetch(table, select = '*', filters = {}) {
+async function supabaseFetch(table, select = '*', filters = {}, options = {}) {
     let url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}`;
     Object.entries(filters).forEach(([key, val]) => {
         url += `&${key}=eq.${encodeURIComponent(val)}`;
     });
+    
+    if (options.order) {
+        url += `&order=${options.order}`;
+    }
+    if (options.limit) {
+        url += `&limit=${options.limit}`;
+    }
     
     const response = await fetch(url, {
         method: 'GET',
@@ -372,20 +379,28 @@ if (modalSize) {
         searchLoader.classList.remove('hidden');
 
         try {
-            const data = await supabaseFetch('produits_kiabi', 'code_barres', { 
+            const data = await supabaseFetch('produits_kiabi', 'code_barres,collection', { 
                 code_article: ref, 
                 couleur: color,
                 taille: size
+            }, { 
+                order: 'collection.desc', 
+                limit: 1 
             });
             
             if (data && data.length > 0) {
                 const barcode = data[0].code_barres;
+                const collection = data[0].collection;
+                
+                console.log(`Collection identifiée : ${collection}`);
                 barcodeInput.value = barcode;
                 closeModal();
-                showToast(`Article identifié : ${barcode}`, 'success');
+                showToast(`Article identifié (${collection}) : ${barcode}`, 'success');
                 
                 // Insertion directe
                 performSearch();
+            } else {
+                showToast('Référence introuvable', 'error');
             }
         } catch (err) {
             console.error(err);
