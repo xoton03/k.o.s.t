@@ -271,6 +271,7 @@ if (modalSize) {
             searchLoader.classList.add('hidden');
         }
     });
+}
 
 
 // Main Search Logic
@@ -286,8 +287,6 @@ function performSearch() {
         timestamp: new Date().toLocaleTimeString('fr-FR'),
         status: 'En attente'
     };
-
-
 
     inventory.unshift(newItem);
     renderList();
