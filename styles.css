@@ -22,7 +22,7 @@
 }
 
 body {
-    background-color: var(--bg-industrial);
+    background-color: transparent;
     color: #E5E2E1;
     font-family: var(--font-body);
     margin: 0;
@@ -31,6 +31,20 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+/* 3D Background Canvas */
+#bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Ensure all layout elements appear above the canvas */
+header, main, footer, #toast-container, #search-modal, #edit-modal, #clock-container {
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 768px) {
