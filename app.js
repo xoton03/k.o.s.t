@@ -672,9 +672,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!isInResizeHandle) {
                 isDragging = true;
-                offsetLeft = e.clientX - clock.offsetLeft;
-                offsetTop = e.clientY - clock.offsetTop;
+                // Capture current position before removing transform
+                const rect = clock.getBoundingClientRect();
+                clock.style.transform = 'none';
+                clock.style.left = rect.left + 'px';
+                clock.style.top = rect.top + 'px';
+                
+                offsetLeft = e.clientX - rect.left;
+                offsetTop = e.clientY - rect.top;
                 clock.style.transition = 'none';
+                clock.style.right = 'auto';
             }
         });
 
