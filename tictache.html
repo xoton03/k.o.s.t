@@ -108,27 +108,58 @@
         .tt-btn-print:active { transform: scale(0.98); }
         .tt-btn-print:disabled { background: #374151; color: #6b7280; cursor: not-allowed; transform: none; }
         #barcode-preview-area {
-            background: #fff;
-            border: 2px solid #333;
-            border-radius: 4px;
-            padding: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 2rem 1.5rem 1.5rem;
             text-align: center;
-            display: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
         }
-        #barcode-preview-area.visible { display: block; }
-        #barcode-preview-area svg { max-width: 100%; }
+        #barcode-preview-area svg {
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+        }
         .barcode-ref-label {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 900;
-            font-size: 0.9rem;
-            color: #000;
-            margin-top: 0.5rem;
-            letter-spacing: 0.1em;
+            font-size: 0.8rem;
+            color: #111;
+            margin-top: 0.75rem;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
+            line-height: 1.4;
         }
-        .loader-dot {
-            animation: pulse 1s infinite;
+        .barcode-collection-tag {
+            display: inline-block;
+            margin-top: 0.4rem;
+            background: #111;
+            color: #22C55E;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
         }
+        /* Placeholder state for right panel */
+        .barcode-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            height: 100%;
+            min-height: 200px;
+            color: #374151;
+            opacity: 0.4;
+        }
+        .barcode-placeholder svg { color: #374151; }
 
         /* ===== PRINT STYLES ===== */
         @media print {
@@ -187,29 +218,30 @@
         </div>
     </header>
 
-    <!-- Main -->
-    <main>
-        <div class="flex flex-col items-center justify-start w-full overflow-y-auto p-4 sm:p-8 gap-6">
+    <!-- Main: Two-column layout -->
+    <main style="overflow: hidden;">
+        <div style="display: flex; height: 100%; width: 100%; overflow: hidden;">
 
-            <!-- Page Title -->
-            <div class="w-full max-w-lg">
-                <h2 class="text-xs font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent border-l-4 border-yellow-400 pl-3 py-1">TICKETAGE SANS TICKET</h2>
-                <p class="text-[11px] text-slate-500 mt-2 ml-1">Recherchez un article puis imprimez ses étiquettes.</p>
-            </div>
+            <!-- LEFT: Search Funnel -->
+            <div style="width: 380px; min-width: 320px; flex-shrink: 0; border-right: 1px solid #1e293b; background: #0f0f0f; display: flex; flex-direction: column; overflow-y: auto; padding: 1.5rem; gap: 1.25rem;">
 
-            <!-- Search Funnel Card -->
-            <div class="tt-card w-full max-w-lg">
-                <!-- Step indicators -->
-                <div class="flex items-center gap-2 mb-6">
+                <!-- Title -->
+                <div>
+                    <h2 class="text-xs font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent border-l-4 border-yellow-400 pl-3 py-1">TICKETAGE SANS TICKET</h2>
+                    <p style="font-size:0.65rem; color:#475569; margin-top:0.4rem; padding-left:0.75rem;">Recherchez un article pour imprimer ses étiquettes.</p>
+                </div>
+
+                <!-- Steps indicator -->
+                <div style="display:flex; align-items:center; gap:0.5rem;">
                     <div class="tt-step-num active" id="step-1">1</div>
-                    <div class="h-px flex-1 bg-slate-800" id="line-1-2"></div>
+                    <div style="flex:1; height:1px; background:#1e293b;"></div>
                     <div class="tt-step-num" id="step-2">2</div>
-                    <div class="h-px flex-1 bg-slate-800" id="line-2-3"></div>
+                    <div style="flex:1; height:1px; background:#1e293b;"></div>
                     <div class="tt-step-num" id="step-3">3</div>
                 </div>
 
                 <!-- Step 1: Reference -->
-                <div id="group-ref" class="space-y-2 mb-4">
+                <div id="group-ref" class="space-y-2">
                     <label class="tt-label">Référence (5 caractères)</label>
                     <div class="relative">
                         <input type="text" id="tt-ref" class="tt-input pr-10" placeholder="ex: A1B2C" maxlength="5" autocomplete="off">
@@ -220,7 +252,7 @@
                 </div>
 
                 <!-- Step 2: Color -->
-                <div id="group-color" class="space-y-2 mb-4 hidden">
+                <div id="group-color" class="space-y-2 hidden">
                     <label class="tt-label">Couleur</label>
                     <select id="tt-color" class="tt-select">
                         <option value="">Choisir une couleur...</option>
@@ -228,38 +260,49 @@
                 </div>
 
                 <!-- Step 3: Size -->
-                <div id="group-size" class="space-y-2 mb-4 hidden">
+                <div id="group-size" class="space-y-2 hidden">
                     <label class="tt-label">Taille</label>
                     <select id="tt-size" class="tt-select">
                         <option value="">Choisir une taille...</option>
                     </select>
                 </div>
+
             </div>
 
-            <!-- Barcode Preview & Print Card -->
-            <div class="tt-card w-full max-w-lg hidden" id="print-card">
-                <div class="space-y-5">
+            <!-- RIGHT: Barcode + Print -->
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; gap:1.5rem; overflow-y: auto;">
+
+                <!-- Placeholder (before barcode) -->
+                <div class="barcode-placeholder" id="barcode-placeholder">
+                    <i data-lucide="scan-barcode" style="width:48px;height:48px;"></i>
+                    <p style="font-family:'Space Grotesk',sans-serif; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.15em;">En attente de sélection</p>
+                </div>
+
+                <!-- Barcode + Print Card (appears after selection) -->
+                <div id="print-card" class="hidden" style="width:100%; max-width:420px; display:none; flex-direction:column; gap:1.25rem;">
+
                     <!-- Barcode Visual -->
-                    <div id="barcode-preview-area" class="visible">
+                    <div id="barcode-preview-area">
                         <svg id="barcode-svg"></svg>
                         <div class="barcode-ref-label" id="barcode-ref-display">---</div>
-                        <div class="text-[10px] text-slate-400 mt-1" id="barcode-collection-display"></div>
+                        <div id="barcode-collection-display"></div>
                     </div>
 
-                    <!-- Quantity -->
-                    <div class="space-y-2">
-                        <label class="tt-label">Quantité à imprimer</label>
-                        <input type="number" id="tt-quantity" class="tt-input" value="1" min="1" max="100">
+                    <!-- Quantity + Print -->
+                    <div style="display:flex; gap:0.75rem; align-items:flex-end;">
+                        <div style="flex:0 0 100px;">
+                            <label class="tt-label">Quantité</label>
+                            <input type="number" id="tt-quantity" class="tt-input" value="1" min="1" max="100" style="text-align:center; font-size:1.3rem;">
+                        </div>
+                        <button id="btn-print" class="tt-btn-print" style="flex:1;">
+                            <i data-lucide="printer" class="w-5 h-5"></i>
+                            IMPRIMER
+                        </button>
                     </div>
 
-                    <!-- Print Button -->
-                    <button id="btn-print" class="tt-btn-print">
-                        <i data-lucide="printer" class="w-5 h-5"></i>
-                        IMPRIMER LES ÉTIQUETTES
-                    </button>
                 </div>
-            </div>
 
+            </div>
         </div>
     </main>
 
@@ -452,7 +495,11 @@
                 currentBarcode = data[0].code_barres;
                 currentCollection = data[0].collection;
                 renderBarcode(currentBarcode, currentRef, currentCollection);
-                printCard.classList.remove('hidden');
+                // Show print card, hide placeholder
+                document.getElementById('barcode-placeholder').style.display = 'none';
+                const pc = document.getElementById('print-card');
+                pc.classList.remove('hidden');
+                pc.style.display = 'flex';
                 showToast(`Code-barres trouvé (${currentCollection})`, 'success');
             } else {
                 showToast('Référence introuvable', 'error');
@@ -462,36 +509,28 @@
         }
     });
 
-    // ============================================================
-    // BARCODE RENDERING
-    // ============================================================
     function renderBarcode(code, ref, collection) {
+        const opts = {
+            width: 2.5,
+            height: 90,
+            displayValue: true,
+            fontSize: 16,
+            fontOptions: 'bold',
+            margin: 12,
+            background: 'transparent',
+            lineColor: '#000000',
+            textAlign: 'center',
+            textPosition: 'bottom',
+            textMargin: 4
+        };
         try {
-            JsBarcode('#barcode-svg', code, {
-                format: 'EAN13',
-                width: 2,
-                height: 70,
-                displayValue: true,
-                fontSize: 14,
-                fontOptions: 'bold',
-                margin: 10,
-                background: '#ffffff',
-                lineColor: '#000000'
-            });
+            JsBarcode('#barcode-svg', code, { ...opts, format: 'EAN13' });
         } catch (e) {
-            JsBarcode('#barcode-svg', code, {
-                format: 'CODE128',
-                width: 2,
-                height: 70,
-                displayValue: true,
-                fontSize: 14,
-                margin: 10,
-                background: '#ffffff',
-                lineColor: '#000000'
-            });
+            JsBarcode('#barcode-svg', code, { ...opts, format: 'CODE128' });
         }
         document.getElementById('barcode-ref-display').textContent = `${ref} — ${ttColor.value} — ${ttSize.value}`;
-        document.getElementById('barcode-collection-display').textContent = `Collection : ${collection}`;
+        const collEl = document.getElementById('barcode-collection-display');
+        collEl.innerHTML = `<span class="barcode-collection-tag">Collection ${collection}</span>`;
     }
 
     // ============================================================
