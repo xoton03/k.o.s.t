@@ -26,7 +26,7 @@
         </div>
         
         <div class="flex items-center gap-2 sm:gap-6">
-            <!-- Clock: hidden on small mobile, shown from sm -->
+            <!-- Clock: hidden on mobile, shown from sm -->
             <div id="clock-container" class="hidden sm:flex items-center gap-4 bg-black/40 border border-white/5 px-4 py-2 rounded-sm border-l-4 border-l-[#22C55E]">
                 <div class="flex flex-col">
                     <div class="flex items-baseline gap-1 leading-none">
@@ -35,11 +35,6 @@
                     </div>
                     <div id="current-date" class="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">-- --- ----</div>
                 </div>
-            </div>
-            <!-- Mobile clock (compact) -->
-            <div id="clock-mobile" class="flex sm:hidden flex-col items-end">
-                <span id="current-time-mobile" class="text-base font-black text-white tabular-nums">00:00</span>
-                <span id="current-date-mobile" class="text-[7px] font-bold text-slate-500 uppercase tracking-widest">-- --- ----</span>
             </div>
 
             <div class="flex items-center gap-2">
@@ -65,10 +60,10 @@
                 <h2 class="text-xs font-black text-[#22C55E] border-l-4 border-[#22C55E] pl-3 py-1">ENTRY MODULE</h2>
                 
                 <form id="stock-form" class="space-y-4">
-                    <!-- Mobile: side-by-side inputs -->
+                    <!-- Mobile: location small, barcode wide -->
                     <div class="flex gap-3 sm:block sm:space-y-5">
-                        <div class="input-group flex-1">
-                            <label for="emplacement">Location (A-00-00)</label>
+                        <div class="input-group w-24 sm:w-full">
+                            <label for="emplacement">Loc.</label>
                             <input type="text" id="emplacement" name="emplacement" required placeholder="---" autocomplete="off" style="min-height:44px">
                         </div>
 

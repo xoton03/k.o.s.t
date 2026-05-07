@@ -91,12 +91,6 @@ function updateClock() {
     if (timeElement) timeElement.textContent = timeStr;
     if (secondsElement) secondsElement.textContent = secStr;
     if (dateElement) dateElement.textContent = dateStr;
-
-    // Mobile compact clock
-    const timeMobile = document.getElementById('current-time-mobile');
-    const dateMobile = document.getElementById('current-date-mobile');
-    if (timeMobile) timeMobile.textContent = timeStr;
-    if (dateMobile) dateMobile.textContent = dateStr;
 }
 setInterval(updateClock, 1000);
 updateClock();
