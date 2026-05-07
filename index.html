@@ -18,8 +18,8 @@
 <body class="bg-black text-slate-300">
 
     <header class="flex items-center justify-between px-6 bg-slate-900 border-b border-white/5">
-        <div class="flex items-center gap-3">
-            <img src="assets/logo.png" alt="K.O.S.T Logo" class="w-9 h-9 rounded-md object-cover shadow-[0_0_15px_rgba(34,197,94,0.3)] shrink-0 border border-[#22C55E]/30">
+        <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-all active:scale-95 group" id="logo-trigger">
+            <img src="assets/logo.png" alt="K.O.S.T Logo" class="w-9 h-9 rounded-md object-cover shadow-[0_0_15px_rgba(34,197,94,0.3)] shrink-0 border border-[#22C55E]/30 group-hover:border-[#22C55E]">
             <h1 class="text-white font-extrabold text-xl tracking-tighter">
                 <span class="text-blue-500">K</span>.<span class="text-red-600">O</span>.S.T.
             </h1>
@@ -203,6 +203,52 @@
             </form>
         </div>
     </div>
+
+    <!-- Navigation Drawer -->
+    <div id="nav-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity duration-300"></div>
+    <aside id="nav-drawer" class="fixed top-0 left-0 h-full w-72 bg-[#0f172a] border-r border-white/10 z-[200] -translate-x-full transition-transform duration-300 ease-out shadow-2xl">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded">
+                <span class="text-white font-black tracking-tighter">NAVIGATEUR</span>
+            </div>
+            <button id="btn-close-drawer" class="text-slate-500 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <nav class="p-4 space-y-2">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-3 mb-4">Modules Disponibles</div>
+            
+            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 text-white group transition-all">
+                <div class="w-8 h-8 rounded bg-[#22C55E]/20 flex items-center justify-center">
+                    <i data-lucide="scan-barcode" class="w-4 h-4 text-[#22C55E]"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight">Checkage sans ticket</span>
+                    <span class="text-[9px] text-[#22C55E] font-bold uppercase tracking-wider">Module Actif</span>
+                </div>
+            </a>
+
+            <!-- Placeholder for future modules -->
+            <div class="flex items-center gap-4 px-4 py-3 rounded-lg opacity-40 grayscale cursor-not-allowed">
+                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center">
+                    <i data-lucide="boxes" class="w-4 h-4 text-slate-400"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight">Gestion Stock</span>
+                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Bientôt</span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 w-full p-6 border-t border-white/5">
+            <div class="flex items-center gap-3 text-slate-500">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                <span class="text-xs font-bold uppercase tracking-widest">Paramètres</span>
+            </div>
+        </div>
+    </aside>
 
     <div id="toast-container"></div>
 

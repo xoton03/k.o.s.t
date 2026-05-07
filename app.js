@@ -81,8 +81,31 @@ const btnCloseModal = document.getElementById('btn-close-modal');
 const modalSearchForm = document.getElementById('modal-search-form');
 const searchLoader = document.getElementById('search-loader');
 
+// Navigation Drawer Elements
+const logoTrigger = document.getElementById('logo-trigger');
+const navDrawer = document.getElementById('nav-drawer');
+const navBackdrop = document.getElementById('nav-backdrop');
+const btnCloseDrawer = document.getElementById('btn-close-drawer');
+
 // Initialize Lucide Icons
 lucide.createIcons();
+
+// Navigation Drawer Functions
+function openDrawer() {
+    navBackdrop.classList.remove('hidden');
+    setTimeout(() => navBackdrop.classList.add('opacity-100'), 10);
+    navDrawer.classList.remove('-translate-x-full');
+}
+
+function closeDrawer() {
+    navBackdrop.classList.remove('opacity-100');
+    navDrawer.classList.add('-translate-x-full');
+    setTimeout(() => navBackdrop.classList.add('hidden'), 300);
+}
+
+logoTrigger.addEventListener('click', openDrawer);
+btnCloseDrawer.addEventListener('click', closeDrawer);
+navBackdrop.addEventListener('click', closeDrawer);
 
 // ============================================================
 // 3D PERSPECTIVE GRID BACKGROUND
