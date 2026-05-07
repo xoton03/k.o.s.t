@@ -1,8 +1,30 @@
 // State Management
 let inventory = [];
-let db = null;
-let SQL = null;
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyLTx3UJtcZ96MNOYq7Kdkm8BDcOYzu-gLOkFDALPpdzrGmsKsUx_IdOZenLq8a0AdM-w/exec';
+
+// Supabase Config
+const SUPABASE_URL = "https://jphzmgscxpejcyjlnspq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_gshF6Y08DYJYO9c8Z_Cv2Q_9nEZr7J9";
+
+// Supabase Helper
+async function supabaseFetch(table, select = '*', filters = {}) {
+    let url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}`;
+    Object.entries(filters).forEach(([key, val]) => {
+        url += `&${key}=eq.${encodeURIComponent(val)}`;
+    });
+    
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) throw new Error('Erreur réseau Supabase');
+    return await response.json();
+}
 
 // Persistence Logic
 function saveToLocal() {
@@ -40,7 +62,6 @@ const statPending = document.getElementById('stat-pending');
 const btnCloud = document.getElementById('btn-cloud');
 const btnRefresh = document.getElementById('btn-refresh');
 const toastContainer = document.getElementById('toast-container');
-const dbUpload = document.getElementById('db-upload');
 const dbStatus = document.getElementById('db-status');
 const barcodeInput = document.getElementById('barcode');
 const emplacementInput = document.getElementById('emplacement');
@@ -51,6 +72,7 @@ const modalContent = document.getElementById('modal-content');
 const btnOpenSearch = document.getElementById('btn-open-search');
 const btnCloseModal = document.getElementById('btn-close-modal');
 const modalSearchForm = document.getElementById('modal-search-form');
+const searchLoader = document.getElementById('search-loader');
 
 // Initialize Lucide Icons
 lucide.createIcons();
@@ -58,10 +80,13 @@ lucide.createIcons();
 // Update Clock
 function updateClock() {
     const now = new Date();
-    document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        timeElement.textContent = now.toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -87,6 +112,7 @@ function resetModalState() {
     
     if(colorGroup) colorGroup.classList.add('hidden');
     if(sizeGroup) sizeGroup.classList.add('hidden');
+    if(searchLoader) searchLoader.classList.add('hidden');
 }
 
 function openModal() {
@@ -126,48 +152,6 @@ if (searchModal) {
     });
 }
 
-// Initialize SQL.js
-async function initDatabase() {
-    try {
-        const config = {
-            locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${filename}`
-        };
-        SQL = await initSqlJs(config);
-        showToast('Système K.O.S.T. initialisé', 'success');
-    } catch (err) {
-        console.error(err);
-        showToast('Erreur Noyau SQL.js', 'error');
-    }
-}
-initDatabase();
-
-// Handle DB Upload
-dbUpload.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    dbStatus.textContent = "Chargement...";
-    
-    reader.onload = function() {
-        try {
-            const Uints = new Uint8Array(reader.result);
-            db = new SQL.Database(Uints);
-            dbStatus.textContent = `${file.name} | DATA READY`;
-            dbStatus.classList.remove('text-slate-500');
-            dbStatus.classList.add('text-cyan-400');
-            showToast('Base K.O.S.T. synchronisée localement', 'success');
-            barcodeInput.focus();
-        } catch (err) {
-            console.error(err);
-            dbStatus.textContent = "Erreur chargement";
-            dbStatus.classList.add('text-red-400');
-            showToast('Fichier SQLite invalide', 'error');
-        }
-    };
-    reader.readAsArrayBuffer(file);
-});
-
 // Automated Barcode Handling
 barcodeInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -176,7 +160,7 @@ barcodeInput.addEventListener('keydown', (e) => {
     }
 });
 
-// Cascade Funnel Logic
+// Cascade Funnel Logic (Supabase)
 const modalRef = document.getElementById('modal-ref');
 const modalColor = document.getElementById('modal-color');
 const modalSize = document.getElementById('modal-size');
@@ -184,106 +168,110 @@ const colorGroup = document.getElementById('color-group');
 const sizeGroup = document.getElementById('size-group');
 
 if (modalRef) {
-    modalRef.addEventListener('input', (e) => {
-        let val = e.target.value;
+    modalRef.addEventListener('input', async (e) => {
+        let val = e.target.value.trim();
         if (val.length === 5) {
             val = val.toUpperCase();
             e.target.value = val;
             
-            if (!db) {
-                showToast('Base non chargée.', 'error');
-                return;
-            }
+            searchLoader.classList.remove('hidden');
+            colorGroup.classList.add('hidden');
+            sizeGroup.classList.add('hidden');
+
             try {
-                const query = "SELECT DISTINCT couleur FROM articles_kiabi WHERE code_article = ?";
-                const res = db.exec(query, [val]);
+                const data = await supabaseFetch('produits_kiabi', 'couleur', { code_article: val });
                 
-                if (res.length > 0 && res[0].values.length > 0) {
+                if (data && data.length > 0) {
+                    const uniqueColors = [...new Set(data.map(i => i.couleur))];
                     modalColor.innerHTML = '<option value="">Choisir une couleur...</option>';
-                    res[0].values.forEach(row => {
-                        modalColor.innerHTML += `<option value="${row[0]}">${row[0]}</option>`;
+                    uniqueColors.forEach(color => {
+                        modalColor.innerHTML += `<option value="${color}">${color}</option>`;
                     });
                     colorGroup.classList.remove('hidden');
                 } else {
-                    showToast('Référence introuvable', 'error');
-                    resetModalState();
-                    e.target.value = val; // keep the ref visible though
+                    showToast('Référence introuvable sur Supabase', 'error');
                 }
             } catch (err) {
                 console.error(err);
-                showToast('Erreur SQL (Table articles_kiabi ?)', 'error');
+                showToast('Erreur de connexion Supabase', 'error');
+            } finally {
+                searchLoader.classList.add('hidden');
             }
         } else {
-            // Security: Hide and clear subsequent fields if ref is changed
             colorGroup.classList.add('hidden');
             sizeGroup.classList.add('hidden');
-            modalColor.innerHTML = '<option value="">Choisir une couleur...</option>';
-            modalSize.innerHTML = '<option value="">Choisir une taille...</option>';
         }
     });
 }
 
 if (modalColor) {
-    modalColor.addEventListener('change', (e) => {
+    modalColor.addEventListener('change', async (e) => {
         const color = e.target.value;
         const ref = modalRef.value;
         
         if (!color) {
             sizeGroup.classList.add('hidden');
-            modalSize.innerHTML = '<option value="">Choisir une taille...</option>';
             return;
         }
-        
+
+        searchLoader.classList.remove('hidden');
+        sizeGroup.classList.add('hidden');
+
         try {
-            const query = "SELECT DISTINCT taille FROM articles_kiabi WHERE code_article = ? AND couleur = ?";
-            const res = db.exec(query, [ref, color]);
+            const data = await supabaseFetch('produits_kiabi', 'taille', { 
+                code_article: ref, 
+                couleur: color 
+            });
             
-            if (res.length > 0 && res[0].values.length > 0) {
+            if (data && data.length > 0) {
+                const uniqueSizes = [...new Set(data.map(i => i.taille))];
                 modalSize.innerHTML = '<option value="">Choisir une taille...</option>';
-                res[0].values.forEach(row => {
-                    modalSize.innerHTML += `<option value="${row[0]}">${row[0]}</option>`;
+                uniqueSizes.forEach(size => {
+                    modalSize.innerHTML += `<option value="${size}">${size}</option>`;
                 });
                 sizeGroup.classList.remove('hidden');
-            } else {
-                showToast('Aucune taille pour cette couleur', 'error');
             }
         } catch (err) {
             console.error(err);
-            showToast('Erreur SQL (Taille)', 'error');
+            showToast('Erreur récupération tailles', 'error');
+        } finally {
+            searchLoader.classList.add('hidden');
         }
     });
 }
 
 if (modalSize) {
-    modalSize.addEventListener('change', (e) => {
+    modalSize.addEventListener('change', async (e) => {
         const size = e.target.value;
-        const color = modalColor.value;
         const ref = modalRef.value;
-        
+        const color = modalColor.value;
+
         if (!size) return;
-        
+
+        searchLoader.classList.remove('hidden');
+
         try {
-            const query = "SELECT code_barres FROM articles_kiabi WHERE code_article = ? AND couleur = ? AND taille = ? LIMIT 1";
-            const res = db.exec(query, [ref, color, size]);
+            const data = await supabaseFetch('produits_kiabi', 'code_barres', { 
+                code_article: ref, 
+                couleur: color,
+                taille: size
+            });
             
-            if (res.length > 0 && res[0].values.length > 0) {
-                const barcode = res[0].values[0][0];
-                
-                closeModal();
+            if (data && data.length > 0) {
+                const barcode = data[0].code_barres;
                 barcodeInput.value = barcode;
-                showToast('Article identifié !', 'success');
-                
-                // Trigger auto add
-                performSearch();
-            } else {
-                showToast('Aucun code-barres correspondant.', 'error');
+                closeModal();
+                showToast(`Code-barres récupéré : ${barcode}`, 'success');
+                barcodeInput.focus();
             }
         } catch (err) {
             console.error(err);
-            showToast('Erreur SQL (Code-barres)', 'error');
+            showToast('Erreur récupération code-barres', 'error');
+        } finally {
+            searchLoader.classList.add('hidden');
         }
     });
-}
+
 
 // Main Search Logic
 function performSearch() {
@@ -299,17 +287,7 @@ function performSearch() {
         status: 'En attente'
     };
 
-    // Database is optional for main scan
-    if (db) {
-        try {
-            const res = db.exec("SELECT * FROM stock WHERE barcode = ? LIMIT 1", [barcode]);
-            if (res.length > 0 && res[0].values.length > 0) {
-                newItem.status = 'Validé';
-            }
-        } catch (err) {
-            console.error('Table "stock" check skipped:', err);
-        }
-    }
+
 
     inventory.unshift(newItem);
     renderList();
