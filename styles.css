@@ -33,32 +33,12 @@ body {
     flex-direction: column;
 }
 
-/* 3D Background Canvas */
+/* 3D Background Canvas — behind everything */
 #bg-canvas {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     pointer-events: none;
-}
-
-/* Ensure all layout elements appear above the canvas */
-header, main, footer {
-    position: relative;
-    z-index: 1;
-}
-
-/* Modals and toasts must be well above all layout elements */
-#search-modal, #edit-modal {
-    z-index: 200 !important;
-}
-
-#toast-container {
-    z-index: 300 !important;
-}
-
-/* Clock stays within header stacking context */
-#clock-container {
-    z-index: 2;
 }
 
 
