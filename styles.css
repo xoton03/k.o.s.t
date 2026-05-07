@@ -308,13 +308,23 @@ th {
     color: #94A3B8;
     text-transform: uppercase;
     border-bottom: 1px solid var(--border-dim);
+    border-right: 1px solid var(--border-dim);
     white-space: nowrap;
+}
+
+th:last-child {
+    border-right: none;
 }
 
 td {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid #1A1A1A;
+    border-right: 1px solid #1f1f1f;
     font-size: 0.875rem;
+}
+
+td:last-child {
+    border-right: none;
 }
 
 @media (max-width: 768px) {
