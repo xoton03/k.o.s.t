@@ -109,13 +109,37 @@ main {
 
 @media (max-width: 768px) {
     #clock-container {
-        display: none !important;
+        display: flex;
+        padding: 0.25rem 0.5rem;
+        gap: 0.5rem;
+        border-l-width: 2px;
+        position: static;
+        transform: none;
+        box-shadow: none;
+        min-width: auto;
+        min-height: auto;
     }
+    #clock-container .text-2xl { font-size: 1rem !important; }
+    #clock-container #current-date { display: none; }
 }
 
 #current-time {
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
     transition: font-size 0.1s ease-out;
+}
+
+.header-sticker {
+    height: 30px;
+    width: auto;
+    vertical-align: middle;
+    filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.4));
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .header-sticker {
+        height: 25px;
+    }
 }
 
 .sidebar {
