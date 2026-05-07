@@ -261,8 +261,10 @@ if (modalSize) {
                 const barcode = data[0].code_barres;
                 barcodeInput.value = barcode;
                 closeModal();
-                showToast(`Code-barres récupéré : ${barcode}`, 'success');
-                barcodeInput.focus();
+                showToast(`Article identifié : ${barcode}`, 'success');
+                
+                // Insertion directe
+                performSearch();
             }
         } catch (err) {
             console.error(err);
