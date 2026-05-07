@@ -198,6 +198,19 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// Animate barcode placeholder: WAITING · WAITING.. · WAITING...
+(function animateBarcodeWaiting() {
+    const dots = ['', '.', '..', '...'];
+    let step = 0;
+    setInterval(() => {
+        // Only animate when the field is empty and not focused
+        if (barcodeInput && !barcodeInput.value && document.activeElement !== barcodeInput) {
+            barcodeInput.placeholder = 'WAITING' + dots[step];
+            step = (step + 1) % dots.length;
+        }
+    }, 500);
+})();
+
 // Modal Logic
 function resetModalState() {
     const refInput = document.getElementById('modal-ref');
