@@ -26,17 +26,17 @@
             <img src="https://media1.giphy.com/media/PFxFYEZNUavG8/giphy.gif" alt="Animation" class="header-sticker">
         </div>
         
-        <div class="flex items-center gap-2 sm:gap-6">
-            <!-- Clock: hidden on mobile, shown from sm -->
-            <div id="clock-container" class="bg-black/40 border border-white/5 px-4 py-2 rounded-sm border-l-4 border-l-[#22C55E]">
-                <div class="flex flex-col">
-                    <div class="flex items-baseline gap-1 leading-none">
-                        <span id="current-time" class="text-2xl font-black text-white tracking-tighter tabular-nums">00:00</span>
-                        <span id="current-seconds" class="text-[10px] font-black text-[#22C55E] tabular-nums opacity-80">00</span>
-                    </div>
-                    <div id="current-date" class="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">-- --- ----</div>
-                </div>
+        <!-- Center Clock: Modern HUD Interface -->
+        <div id="clock-container">
+            <div class="time-block">
+                <span id="current-time">00:00</span>
+                <span id="current-seconds">00</span>
             </div>
+            <div class="clock-divider"></div>
+            <div id="current-date">-- --- ----</div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-6">
 
             <div class="flex items-center gap-2">
                 <a href="https://docs.google.com/spreadsheets/d/1j-ZGGNNaFKOslb_kkmqZCTSMlKzR8k7xmVhGs9kTBqs/edit?usp=sharing" target="_blank" class="rainbow-btn px-3 sm:px-5 py-2 text-xs font-black uppercase flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95">

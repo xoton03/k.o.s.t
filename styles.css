@@ -65,6 +65,7 @@ header {
     align-items: center;
     padding: 0 1.5rem;
     flex-shrink: 0;
+    position: relative; /* Anchor for centered clock */
 }
 
 @media (max-width: 768px) {
@@ -89,32 +90,78 @@ main {
 }
 
 #clock-container {
-    position: relative;
-    z-index: 10;
-    cursor: default;
-    overflow: hidden;
-    min-width: 130px;
-    box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: all 0.3s ease;
+    align-items: center;
+    gap: 1.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(34, 197, 94, 0.05);
+    border-left: 3px solid var(--primary-green);
+}
+
+.time-block {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+#current-time {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: -0.05em;
+    font-family: var(--font-headline);
+    line-height: 1;
+}
+
+#current-seconds {
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: var(--primary-green);
+    font-family: var(--font-headline);
+    opacity: 0.8;
+}
+
+.clock-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#current-date {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-family: var(--font-headline);
+    white-space: nowrap;
 }
 
 @media (max-width: 768px) {
     #clock-container {
-        display: flex;
-        padding: 0.25rem 0.5rem;
-        gap: 0.5rem;
-        border-l-width: 2px;
-        position: static;
+        position: relative;
+        left: auto;
+        top: auto;
         transform: none;
+        padding: 0.4rem 0.75rem;
+        gap: 0.75rem;
+        background: transparent;
+        border: none;
         box-shadow: none;
-        min-width: auto;
-        min-height: auto;
+        backdrop-filter: none;
     }
-    #clock-container .text-2xl { font-size: 1rem !important; }
-    #clock-container #current-date { display: none; }
+    .clock-divider { display: none; }
+    #current-date { display: none; }
+    #current-time { font-size: 1.1rem; }
 }
 
 #current-time {
