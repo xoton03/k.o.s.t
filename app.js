@@ -643,13 +643,79 @@ function showToast(message, type = 'info') {
 const btnClearCache = document.getElementById('btn-clear-cache');
 if (btnClearCache) btnClearCache.addEventListener('click', clearCache);
 
+// Silent Background Synchronization
+async function backgroundSync() {
+    try {
+        // 1. Silent Push
+        const itemsToSend = inventory.filter(item => item.status === 'En attente');
+        let pushed = false;
+        if (itemsToSend.length > 0) {
+            const payload = {
+                action: 'ADD',
+                data: itemsToSend.map(item => ({
+                    emplacement: item.emplacement,
+                    barcode: item.barcode,
+                    uuid: item.uuid
+                }))
+            };
+            
+            await fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            itemsToSend.forEach(item => {
+                item.status = 'Validé (Cloud)';
+            });
+            pushed = true;
+        }
+
+        // 2. Silent Fetch
+        const response = await fetch(GAS_URL, {
+            method: 'GET',
+            redirect: 'follow'
+        });
+        
+        const data = await response.json();
+        if (data && data.status === 'success' && Array.isArray(data.items)) {
+            const pendingItems = inventory.filter(item => item.status === 'En attente');
+            
+            const cloudItems = data.items.map(cloudItem => ({
+                id: Date.now() + Math.random(),
+                emplacement: cloudItem.emplacement || 'INCONNU',
+                barcode: cloudItem.barcode || 'INCONNU',
+                uuid: cloudItem.uuid,
+                status: 'Validé (Cloud)',
+                timestamp: new Date().toISOString()
+            }));
+            
+            const currentValid = inventory.filter(i => i.status !== 'En attente');
+            
+            // Re-render if we pushed items OR if the cloud has a different number of items
+            if (pushed || currentValid.length !== cloudItems.length) {
+                inventory = [...cloudItems, ...pendingItems];
+                inventory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderList(); // Note: renderList calls saveToLocal
+            }
+        }
+    } catch (err) {
+        // Silent fail to not interrupt user
+    }
+}
+
 // Initialization sequence
 document.addEventListener('DOMContentLoaded', () => {
     loadFromLocal();
-    // Auto-Sync with Cloud
+    
+    // Initial fetch
     setTimeout(() => {
         actualiserCloud();
     }, 1000);
+
+    // Background sync every 8 seconds
+    setInterval(backgroundSync, 8000);
 
     // Draggable & Resizable Clock Logic (Desktop only)
     const clock = document.getElementById('clock-container');
