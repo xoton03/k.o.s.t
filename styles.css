@@ -100,16 +100,7 @@ main {
 
 @media (max-width: 768px) {
     #clock-container {
-        position: static;
-        resize: none;
-        cursor: default;
-        min-width: unset;
-        min-height: unset;
-        max-width: unset;
-        max-height: unset;
-        box-shadow: none;
-        padding: 2px 8px;
-        border-left-width: 2px;
+        display: none !important;
     }
 }
 
