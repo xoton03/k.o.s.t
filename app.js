@@ -656,4 +656,53 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         actualiserCloud();
     }, 1000);
+
+    // Draggable & Resizable Clock Logic
+    const clock = document.getElementById('clock-container');
+    if (clock) {
+        // Dragging
+        let isDragging = false;
+        let offsetLeft, offsetTop;
+
+        clock.addEventListener('mousedown', (e) => {
+            // Only drag if not clicking the resize handle (usually bottom-right corner)
+            const rect = clock.getBoundingClientRect();
+            const isInResizeHandle = (e.clientX > rect.right - 20 && e.clientY > rect.bottom - 20);
+            
+            if (!isInResizeHandle) {
+                isDragging = true;
+                offsetLeft = e.clientX - clock.offsetLeft;
+                offsetTop = e.clientY - clock.offsetTop;
+                clock.style.transition = 'none';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                clock.style.left = `${e.clientX - offsetLeft}px`;
+                clock.style.top = `${e.clientY - offsetTop}px`;
+                clock.style.right = 'auto'; // Disable right anchoring
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Auto-scaling Font
+        const timeTxt = document.getElementById('current-time');
+        const secTxt = document.getElementById('current-seconds');
+        
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const width = entry.contentRect.width;
+                const height = entry.contentRect.height;
+                // Calculate font size based on smallest dimension
+                const fontSize = Math.min(width / 4.5, height / 1.5);
+                timeTxt.style.fontSize = `${fontSize}px`;
+                secTxt.style.fontSize = `${fontSize / 3}px`;
+            }
+        });
+        resizeObserver.observe(clock);
+    }
 });
