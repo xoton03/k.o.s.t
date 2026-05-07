@@ -86,7 +86,6 @@ const logoTrigger = document.getElementById('logo-trigger');
 const navDrawer = document.getElementById('nav-drawer');
 const navBackdrop = document.getElementById('nav-backdrop');
 const btnCloseDrawer = document.getElementById('btn-close-drawer');
-const mobileMenuTrigger = document.getElementById('mobile-menu-trigger');
 
 // Initialize Lucide Icons
 lucide.createIcons();
@@ -105,7 +104,6 @@ function closeDrawer() {
 }
 
 logoTrigger.addEventListener('click', openDrawer);
-if (mobileMenuTrigger) mobileMenuTrigger.addEventListener('click', openDrawer);
 btnCloseDrawer.addEventListener('click', closeDrawer);
 navBackdrop.addEventListener('click', closeDrawer);
 

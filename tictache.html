@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K.O.S.T. - Tic Tache</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ===== TIC TACHE SPECIFIC STYLES ===== */
+        .tt-card {
+            background: #171717;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+        .tt-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .tt-step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #22C55E20;
+            border: 1px solid #22C55E50;
+            color: #22C55E;
+            font-size: 0.65rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            flex-shrink: 0;
+        }
+        .tt-step-num.active {
+            background: #22C55E;
+            color: #000;
+        }
+        .tt-input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 0.875rem 1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .tt-input:focus { border-color: #22D3EE; }
+        .tt-input::placeholder { color: #555; font-weight: 500; text-transform: none; letter-spacing: 0; }
+        .tt-select {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 0.875rem 1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+        .tt-select:focus { border-color: #22D3EE; }
+        .tt-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #64748b;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .tt-btn-print {
+            width: 100%;
+            background: #22C55E;
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            min-height: 56px;
+        }
+        .tt-btn-print:hover { background: #16a34a; transform: translateY(-1px); }
+        .tt-btn-print:active { transform: scale(0.98); }
+        .tt-btn-print:disabled { background: #374151; color: #6b7280; cursor: not-allowed; transform: none; }
+        #barcode-preview-area {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 4px;
+            padding: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+        #barcode-preview-area.visible { display: block; }
+        #barcode-preview-area svg { max-width: 100%; }
+        .barcode-ref-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 900;
+            font-size: 0.9rem;
+            color: #000;
+            margin-top: 0.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .loader-dot {
+            animation: pulse 1s infinite;
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            html, body { margin: 0; padding: 0; background: #fff !important; }
+            body > *:not(#print-zone) { display: none !important; }
+            #print-zone {
+                display: block !important;
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%;
+            }
+            .print-label {
+                page-break-inside: avoid;
+                padding: 4mm;
+                text-align: center;
+            }
+            .print-label svg { max-width: 58mm; }
+            .print-ref {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 8pt;
+                font-weight: 900;
+                text-transform: uppercase;
+            }
+        }
+        #print-zone { display: none; }
+    </style>
+</head>
+<body class="bg-black text-slate-300">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-6 bg-slate-900 border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <button id="mobile-menu-trigger" class="lg:hidden text-white hover:text-[#22C55E] transition-colors p-1">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-all group" id="logo-trigger">
+                <img src="assets/logo.png" alt="K.O.S.T Logo" class="w-9 h-9 rounded-md object-cover shadow-[0_0_15px_rgba(34,197,94,0.3)] shrink-0 border border-[#22C55E]/30 group-hover:border-[#22C55E]">
+                <h1 class="text-white font-extrabold text-xl tracking-tighter">
+                    <span class="text-blue-500">K</span>.<span class="text-red-600">O</span>.S.T.
+                </h1>
+            </div>
+        </div>
+
+        <!-- Center Clock -->
+        <div id="clock-container">
+            <div class="time-block">
+                <span id="current-time">00:00</span>
+                <span id="current-seconds">00</span>
+            </div>
+            <div class="clock-divider"></div>
+            <div id="current-date">-- --- ----</div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <span class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest border border-yellow-400/30 bg-yellow-400/10 px-2 py-1">TIC TACHE</span>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main>
+        <div class="flex flex-col items-center justify-start w-full overflow-y-auto p-4 sm:p-8 gap-6">
+
+            <!-- Page Title -->
+            <div class="w-full max-w-lg">
+                <h2 class="text-xs font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent border-l-4 border-yellow-400 pl-3 py-1">TICKETAGE SANS TICKET</h2>
+                <p class="text-[11px] text-slate-500 mt-2 ml-1">Recherchez un article puis imprimez ses étiquettes.</p>
+            </div>
+
+            <!-- Search Funnel Card -->
+            <div class="tt-card w-full max-w-lg">
+                <!-- Step indicators -->
+                <div class="flex items-center gap-2 mb-6">
+                    <div class="tt-step-num active" id="step-1">1</div>
+                    <div class="h-px flex-1 bg-slate-800" id="line-1-2"></div>
+                    <div class="tt-step-num" id="step-2">2</div>
+                    <div class="h-px flex-1 bg-slate-800" id="line-2-3"></div>
+                    <div class="tt-step-num" id="step-3">3</div>
+                </div>
+
+                <!-- Step 1: Reference -->
+                <div id="group-ref" class="space-y-2 mb-4">
+                    <label class="tt-label">Référence (5 caractères)</label>
+                    <div class="relative">
+                        <input type="text" id="tt-ref" class="tt-input pr-10" placeholder="ex: A1B2C" maxlength="5" autocomplete="off">
+                        <span id="ref-loader" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                            <i data-lucide="loader" class="w-4 h-4 text-cyan-400 animate-spin"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Color -->
+                <div id="group-color" class="space-y-2 mb-4 hidden">
+                    <label class="tt-label">Couleur</label>
+                    <select id="tt-color" class="tt-select">
+                        <option value="">Choisir une couleur...</option>
+                    </select>
+                </div>
+
+                <!-- Step 3: Size -->
+                <div id="group-size" class="space-y-2 mb-4 hidden">
+                    <label class="tt-label">Taille</label>
+                    <select id="tt-size" class="tt-select">
+                        <option value="">Choisir une taille...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Barcode Preview & Print Card -->
+            <div class="tt-card w-full max-w-lg hidden" id="print-card">
+                <div class="space-y-5">
+                    <!-- Barcode Visual -->
+                    <div id="barcode-preview-area" class="visible">
+                        <svg id="barcode-svg"></svg>
+                        <div class="barcode-ref-label" id="barcode-ref-display">---</div>
+                        <div class="text-[10px] text-slate-400 mt-1" id="barcode-collection-display"></div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="space-y-2">
+                        <label class="tt-label">Quantité à imprimer</label>
+                        <input type="number" id="tt-quantity" class="tt-input" value="1" min="1" max="100">
+                    </div>
+
+                    <!-- Print Button -->
+                    <button id="btn-print" class="tt-btn-print">
+                        <i data-lucide="printer" class="w-5 h-5"></i>
+                        IMPRIMER LES ÉTIQUETTES
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Print Zone (hidden, only visible during print) -->
+    <div id="print-zone"></div>
+
+    <!-- Navigation Drawer -->
+    <div id="nav-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity duration-300"></div>
+    <aside id="nav-drawer" class="fixed top-0 left-0 h-full w-72 bg-[#0f172a] border-r border-white/10 z-[200] -translate-x-full transition-transform duration-300 ease-out shadow-2xl">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded">
+                <span class="text-white font-black tracking-tighter">NAVIGATEUR</span>
+            </div>
+            <button id="btn-close-drawer" class="text-slate-500 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <nav class="p-4 space-y-2">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-3 mb-4">Modules Disponibles</div>
+
+            <a href="index.html" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 group transition-all">
+                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center group-hover:bg-[#22C55E]/20">
+                    <i data-lucide="scan-barcode" class="w-4 h-4 text-slate-400 group-hover:text-[#22C55E]"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight group-hover:text-white">Checkage sans ticket</span>
+                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Inventaire</span>
+                </div>
+            </a>
+
+            <a href="tictache.html" class="flex items-center gap-4 px-4 py-3 rounded-lg bg-yellow-400/10 border border-yellow-400/20 text-white group transition-all">
+                <div class="w-8 h-8 rounded bg-yellow-400/20 flex items-center justify-center">
+                    <i data-lucide="tag" class="w-4 h-4 text-yellow-400"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight">Ticketage sans ticket</span>
+                    <span class="text-[9px] text-yellow-400 font-bold uppercase tracking-wider">Module Actif</span>
+                </div>
+            </a>
+        </nav>
+        <div class="absolute bottom-0 left-0 w-full p-6 border-t border-white/5">
+            <div class="flex items-center gap-3 text-slate-500">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                <span class="text-xs font-bold uppercase tracking-widest">Paramètres</span>
+            </div>
+        </div>
+    </aside>
+
+    <div id="toast-container"></div>
+
+    <script>
+    // ============================================================
+    // CONFIG SUPABASE (identique à app.js)
+    // ============================================================
+    const SUPABASE_URL = "https://jphzmgscxpejcyjlnspq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_gshF6Y08DYJYO9c8Z_Cv2Q_9nEZr7J9";
+
+    async function supabaseFetch(table, select = '*', filters = {}, options = {}) {
+        let url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}`;
+        Object.entries(filters).forEach(([key, val]) => {
+            url += `&${key}=eq.${encodeURIComponent(val)}`;
+        });
+        if (options.order) url += `&order=${options.order}`;
+        if (options.limit) url += `&limit=${options.limit}`;
+        const res = await fetch(url, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        if (!res.ok) throw new Error('Erreur Supabase');
+        return res.json();
+    }
+
+    // ============================================================
+    // CLOCK
+    // ============================================================
+    function updateClock() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const days = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
+        const months = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
+        document.getElementById('current-time').textContent = `${hh}:${mm}`;
+        document.getElementById('current-seconds').textContent = ss;
+        document.getElementById('current-date').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function showToast(msg, type = 'info') {
+        const c = document.getElementById('toast-container');
+        const t = document.createElement('div');
+        const color = type === 'success' ? '#22C55E' : type === 'error' ? '#EF4444' : '#22D3EE';
+        t.className = 'toast';
+        t.style.borderLeftColor = color;
+        t.innerHTML = `<span style="color:${color};font-size:1.2rem;">●</span><span style="flex:1;font-size:0.8rem;font-weight:700;">${msg}</span>`;
+        c.appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+    }
+
+    // ============================================================
+    // SEARCH FUNNEL
+    // ============================================================
+    lucide.createIcons();
+
+    const ttRef = document.getElementById('tt-ref');
+    const ttColor = document.getElementById('tt-color');
+    const ttSize = document.getElementById('tt-size');
+    const groupColor = document.getElementById('group-color');
+    const groupSize = document.getElementById('group-size');
+    const printCard = document.getElementById('print-card');
+    const refLoader = document.getElementById('ref-loader');
+
+    let currentBarcode = null;
+    let currentRef = null;
+    let currentCollection = null;
+
+    function setStep(n) {
+        for (let i = 1; i <= 3; i++) {
+            const el = document.getElementById(`step-${i}`);
+            el.classList.toggle('active', i <= n);
+        }
+    }
+
+    ttRef.addEventListener('input', async (e) => {
+        const val = e.target.value.trim().toUpperCase();
+        e.target.value = val;
+        if (val.length !== 5) {
+            groupColor.classList.add('hidden');
+            groupSize.classList.add('hidden');
+            printCard.classList.add('hidden');
+            setStep(1);
+            return;
+        }
+        refLoader.classList.remove('hidden');
+        ttRef.blur();
+        try {
+            const data = await supabaseFetch('produits_kiabi', 'couleur', { code_article: val });
+            if (data && data.length > 0) {
+                const colors = [...new Set(data.map(i => i.couleur))];
+                ttColor.innerHTML = '<option value="">Choisir une couleur...</option>';
+                colors.forEach(c => ttColor.innerHTML += `<option value="${c}">${c}</option>`);
+                groupColor.classList.remove('hidden');
+                groupSize.classList.add('hidden');
+                printCard.classList.add('hidden');
+                currentRef = val;
+                setStep(2);
+            } else {
+                showToast('Référence introuvable', 'error');
+            }
+        } catch (err) {
+            showToast('Erreur connexion Supabase', 'error');
+        } finally {
+            refLoader.classList.add('hidden');
+        }
+    });
+
+    ttColor.addEventListener('change', async (e) => {
+        const color = e.target.value;
+        if (!color) { groupSize.classList.add('hidden'); return; }
+        try {
+            const data = await supabaseFetch('produits_kiabi', 'taille', { code_article: currentRef, couleur: color });
+            if (data && data.length > 0) {
+                const sizes = [...new Set(data.map(i => i.taille))];
+                ttSize.innerHTML = '<option value="">Choisir une taille...</option>';
+                sizes.forEach(s => ttSize.innerHTML += `<option value="${s}">${s}</option>`);
+                groupSize.classList.remove('hidden');
+                printCard.classList.add('hidden');
+                setStep(3);
+            }
+        } catch (err) {
+            showToast('Erreur récupération tailles', 'error');
+        }
+    });
+
+    ttSize.addEventListener('change', async (e) => {
+        const size = e.target.value;
+        if (!size) return;
+        try {
+            const data = await supabaseFetch('produits_kiabi', 'code_barres,collection', {
+                code_article: currentRef,
+                couleur: ttColor.value,
+                taille: size
+            }, { order: 'collection.desc', limit: 1 });
+
+            if (data && data.length > 0) {
+                currentBarcode = data[0].code_barres;
+                currentCollection = data[0].collection;
+                renderBarcode(currentBarcode, currentRef, currentCollection);
+                printCard.classList.remove('hidden');
+                showToast(`Code-barres trouvé (${currentCollection})`, 'success');
+            } else {
+                showToast('Référence introuvable', 'error');
+            }
+        } catch (err) {
+            showToast('Erreur Supabase', 'error');
+        }
+    });
+
+    // ============================================================
+    // BARCODE RENDERING
+    // ============================================================
+    function renderBarcode(code, ref, collection) {
+        try {
+            JsBarcode('#barcode-svg', code, {
+                format: 'EAN13',
+                width: 2,
+                height: 70,
+                displayValue: true,
+                fontSize: 14,
+                fontOptions: 'bold',
+                margin: 10,
+                background: '#ffffff',
+                lineColor: '#000000'
+            });
+        } catch (e) {
+            JsBarcode('#barcode-svg', code, {
+                format: 'CODE128',
+                width: 2,
+                height: 70,
+                displayValue: true,
+                fontSize: 14,
+                margin: 10,
+                background: '#ffffff',
+                lineColor: '#000000'
+            });
+        }
+        document.getElementById('barcode-ref-display').textContent = `${ref} — ${ttColor.value} — ${ttSize.value}`;
+        document.getElementById('barcode-collection-display').textContent = `Collection : ${collection}`;
+    }
+
+    // ============================================================
+    // PRINT FUNCTION
+    // ============================================================
+    document.getElementById('btn-print').addEventListener('click', () => {
+        if (!currentBarcode) return;
+        const qty = parseInt(document.getElementById('tt-quantity').value) || 1;
+        const printZone = document.getElementById('print-zone');
+        printZone.innerHTML = '';
+
+        for (let i = 0; i < qty; i++) {
+            const label = document.createElement('div');
+            label.className = 'print-label';
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = `print-barcode-${i}`;
+            label.appendChild(svg);
+            const ref = document.createElement('div');
+            ref.className = 'print-ref';
+            ref.textContent = `${currentRef} | ${ttColor.value} | ${ttSize.value}`;
+            label.appendChild(ref);
+            printZone.appendChild(label);
+        }
+
+        // Render barcodes in print zone
+        for (let i = 0; i < qty; i++) {
+            try {
+                JsBarcode(`#print-barcode-${i}`, currentBarcode, {
+                    format: 'EAN13', width: 2, height: 60,
+                    displayValue: true, fontSize: 12, margin: 6,
+                    background: '#ffffff', lineColor: '#000000'
+                });
+            } catch(e) {
+                JsBarcode(`#print-barcode-${i}`, currentBarcode, {
+                    format: 'CODE128', width: 2, height: 60,
+                    displayValue: true, fontSize: 12, margin: 6,
+                    background: '#ffffff', lineColor: '#000000'
+                });
+            }
+        }
+
+        window.print();
+    });
+
+    // ============================================================
+    // NAVIGATION DRAWER
+    // ============================================================
+    const logoTrigger = document.getElementById('logo-trigger');
+    const mobileMenuTrigger = document.getElementById('mobile-menu-trigger');
+    const navDrawer = document.getElementById('nav-drawer');
+    const navBackdrop = document.getElementById('nav-backdrop');
+    const btnCloseDrawer = document.getElementById('btn-close-drawer');
+
+    function openDrawer() {
+        navBackdrop.classList.remove('hidden');
+        setTimeout(() => navBackdrop.classList.add('opacity-100'), 10);
+        navDrawer.classList.remove('-translate-x-full');
+    }
+    function closeDrawer() {
+        navBackdrop.classList.remove('opacity-100');
+        navDrawer.classList.add('-translate-x-full');
+        setTimeout(() => navBackdrop.classList.add('hidden'), 300);
+    }
+    logoTrigger.addEventListener('click', openDrawer);
+    if (mobileMenuTrigger) mobileMenuTrigger.addEventListener('click', openDrawer);
+    btnCloseDrawer.addEventListener('click', closeDrawer);
+    navBackdrop.addEventListener('click', closeDrawer);
+
+    // Re-init icons after dynamic content
+    lucide.createIcons();
+    </script>
+</body>
+</html>
