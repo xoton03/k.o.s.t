@@ -111,28 +111,30 @@
             background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
             border: none;
             border-radius: 8px;
-            padding: 2rem 1.5rem 1.5rem;
+            padding: 0.5rem 0.25rem 0.25rem;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         #barcode-preview-area svg {
             width: 100%;
-            max-width: 280px;
+            max-width: 100%;
             height: auto;
+            display: block;
         }
         .barcode-ref-label {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 900;
-            font-size: 0.8rem;
+            font-size: 0.65rem;
             color: #111;
-            margin-bottom: 0.75rem;
-            letter-spacing: 0.12em;
+            margin-bottom: 0.15rem;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            line-height: 1.4;
+            line-height: 1.2;
+            padding: 0.25rem 0.25rem 0;
         }
         .barcode-collection-tag {
             display: inline-block;
@@ -161,27 +163,44 @@
         }
         .barcode-placeholder svg { color: #374151; }
 
-        /* ===== PRINT STYLES ===== */
+        /* ===== PRINT STYLES: 35mm x 35mm thermal label ===== */
         @media print {
-            html, body { margin: 0; padding: 0; background: #fff !important; }
+            @page {
+                size: 35mm 35mm;
+                margin: 0;
+            }
+            html, body { margin: 0; padding: 0; background: #fff !important; width: 35mm; height: 35mm; }
             body > *:not(#print-zone) { display: none !important; }
             #print-zone {
                 display: block !important;
                 position: fixed;
                 top: 0; left: 0;
-                width: 100%;
+                width: 35mm;
+                height: 35mm;
             }
             .print-label {
-                page-break-inside: avoid;
-                padding: 4mm;
-                text-align: center;
+                width: 35mm;
+                height: 35mm;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                margin: 0;
+                page-break-after: always;
+                overflow: hidden;
             }
-            .print-label svg { max-width: 58mm; }
+            .print-label svg { width: 35mm; max-width: 35mm; height: auto; display: block; }
             .print-ref {
                 font-family: 'Space Grotesk', sans-serif;
-                font-size: 8pt;
+                font-size: 5.5pt;
                 font-weight: 900;
                 text-transform: uppercase;
+                text-align: center;
+                letter-spacing: 0.05em;
+                line-height: 1.2;
+                margin: 0;
+                padding: 0;
             }
         }
         #print-zone { display: none; }
@@ -513,16 +532,20 @@
     function renderBarcode(code, ref, collection) {
         const opts = {
             width: 2.5,
-            height: 90,
+            height: 85,
             displayValue: true,
-            fontSize: 16,
+            fontSize: 13,
             fontOptions: 'bold',
-            margin: 12,
+            margin: 0,
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            marginRight: 0,
             background: 'transparent',
             lineColor: '#000000',
             textAlign: 'center',
             textPosition: 'bottom',
-            textMargin: 4
+            textMargin: 2
         };
         try {
             JsBarcode('#barcode-svg', code, { ...opts, format: 'EAN13' });
