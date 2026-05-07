@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K.O.S.T. — Station d'Impression</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Supabase JS v2 for Realtime -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- JsBarcode -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #070707;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #1e293b;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header-brand {
+            display: flex;
+            flex-direction: column;
+        }
+        .header-brand h1 {
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .header-brand h1 span {
+            background: linear-gradient(90deg, #22C55E, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-brand p {
+            font-size: 0.55rem;
+            color: #475569;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 0.1rem;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border: 1px solid currentColor;
+            transition: all 0.3s;
+        }
+        .status-badge.connecting { color: #64748b; border-color: #334155; background: #0f172a; }
+        .status-badge.connected  { color: #22C55E; border-color: #166534; background: #052e16; }
+        .status-badge.disconnected { color: #EF4444; border-color: #7f1d1d; background: #1a0505; }
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+        .status-badge.connected .status-dot { animation: pulse-dot 1.5s infinite; }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        main {
+            flex: 1;
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ===== LEFT COLUMN: Status + Current Job ===== */
+        .col-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Idle card */
+        .idle-card {
+            background: #0f0f0f;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .idle-icon {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #334155;
+        }
+        .idle-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+        .idle-sub {
+            font-size: 0.65rem;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* Active print job card */
+        .job-card {
+            background: #052e16;
+            border: 2px solid #22C55E;
+            border-radius: 12px;
+            padding: 2rem;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            animation: job-appear 0.3s ease-out;
+        }
+        .job-card.active { display: flex; }
+        @keyframes job-appear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .job-badge {
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: #22C55E;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .job-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: #22C55E;
+            border-radius: 50%;
+            animation: pulse-dot 0.8s infinite;
+        }
+        .job-details {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.05em;
+        }
+        .job-qty {
+            font-size: 0.75rem;
+            color: #4ade80;
+            font-weight: 700;
+        }
+        .job-barcode {
+            font-size: 0.65rem;
+            color: #475569;
+            font-family: monospace;
+        }
+
+        /* ===== RIGHT COLUMN: History ===== */
+        .col-right {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .section-label {
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #1e293b;
+        }
+        #history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+        .history-empty {
+            font-size: 0.65rem;
+            color: #334155;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: #0f0f0f;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+        .history-item:hover { border-color: #334155; }
+        .history-time { font-size: 0.65rem; color: #475569; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+        .history-details { flex: 1; font-size: 0.7rem; color: #94a3b8; line-height: 1.3; }
+        .history-qty {
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #22C55E;
+            flex-shrink: 0;
+        }
+        .history-status {
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: #22C55E;
+            background: #052e16;
+            border: 1px solid #166534;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        /* ===== PRINT ZONE (hidden, only for print) ===== */
+        #print-zone { display: none; }
+
+        @media print {
+            @page { size: 35mm 35mm; margin: 0; }
+            html, body {
+                margin: 0; padding: 0;
+                background: #fff !important;
+                width: 35mm; height: 35mm;
+            }
+            body > *:not(#print-zone) { display: none !important; }
+            #print-zone {
+                display: block !important;
+                position: fixed;
+                top: 0; left: 0;
+                width: 35mm; height: 35mm;
+            }
+            .print-label {
+                width: 35mm; height: 35mm;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 0; margin: 0;
+                page-break-after: always;
+                overflow: hidden;
+            }
+            .print-label svg { width: 35mm; max-width: 35mm; height: auto; display: block; }
+            .print-ref {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 5pt;
+                font-weight: 900;
+                text-transform: uppercase;
+                text-align: center;
+                letter-spacing: 0.04em;
+                line-height: 1.2;
+                margin: 0; padding: 0;
+                color: #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-brand">
+            <h1>K.O.S.T. — <span>Station d'Impression</span></h1>
+            <p>Mode récepteur automatique · PC Bureau</p>
+        </div>
+        <div class="status-badge connecting" id="status-badge">
+            <div class="status-dot"></div>
+            <span id="status-text">Connexion...</span>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main>
+        <!-- Left: current state -->
+        <div class="col-left">
+
+            <!-- Idle state -->
+            <div class="idle-card" id="idle-card">
+                <div class="idle-icon">
+                    <i data-lucide="printer" style="width:32px;height:32px;"></i>
+                </div>
+                <div class="idle-title">Station en attente</div>
+                <p class="idle-sub">
+                    Les ordres d'impression envoyés depuis l'application mobile<br>
+                    seront imprimés automatiquement ici.
+                </p>
+            </div>
+
+            <!-- Active job -->
+            <div class="job-card" id="job-card">
+                <div class="job-badge">Impression en cours</div>
+                <div class="job-details" id="job-details">---</div>
+                <div class="job-qty" id="job-qty">---</div>
+                <div class="job-barcode" id="job-barcode">---</div>
+            </div>
+
+        </div>
+
+        <!-- Right: history -->
+        <div class="col-right">
+            <div class="section-label">Historique de session</div>
+            <div id="history-list">
+                <p class="history-empty">Aucune impression dans cette session.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden print zone -->
+    <div id="print-zone"></div>
+
+    <script>
+    // ============================================================
+    // CONFIG
+    // ============================================================
+    const SUPABASE_URL = "https://jphzmgscxpejcyjlnspq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_gshF6Y08DYJYO9c8Z_Cv2Q_9nEZr7J9";
+
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ============================================================
+    // STATUS UI
+    // ============================================================
+    function setStatus(state) {
+        const badge = document.getElementById('status-badge');
+        const text  = document.getElementById('status-text');
+        badge.className = `status-badge ${state}`;
+        const labels = { connected: 'Connectée', disconnected: 'Déconnectée', connecting: 'Connexion...' };
+        text.textContent = labels[state] || 'Inconnu';
+    }
+
+    // ============================================================
+    // SUPABASE HELPERS
+    // ============================================================
+    async function sbFetch(path, method = 'GET', body = null) {
+        const opts = {
+            method,
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, opts);
+        if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+        if (method === 'GET') return res.json();
+        return res;
+    }
+
+    async function markJobDone(id) {
+        await sbFetch(`print_queue?id=eq.${id}`, 'PATCH', { status: 'done' });
+    }
+
+    async function markJobPrinting(id) {
+        await sbFetch(`print_queue?id=eq.${id}`, 'PATCH', { status: 'printing' });
+    }
+
+    // ============================================================
+    // PRINT JOB QUEUE (prevents overlap)
+    // ============================================================
+    let isPrinting = false;
+    const localQueue = [];
+
+    async function enqueueJob(job) {
+        localQueue.push(job);
+        if (!isPrinting) processNextJob();
+    }
+
+    async function processNextJob() {
+        if (localQueue.length === 0) { isPrinting = false; return; }
+        isPrinting = true;
+        const job = localQueue.shift();
+        await executePrintJob(job);
+    }
+
+    // ============================================================
+    // PRINT EXECUTION
+    // ============================================================
+    async function executePrintJob(job) {
+        // 1. Claim the job (mark as 'printing') to prevent other stations from taking it
+        try {
+            await markJobPrinting(job.id);
+        } catch(e) {
+            console.warn('Could not claim job', job.id, e);
+            // If we can't mark it, still try to print (best effort)
+        }
+
+        // 2. Show active job UI
+        document.getElementById('idle-card').style.opacity = '0.3';
+        const jobCard = document.getElementById('job-card');
+        jobCard.classList.add('active');
+        document.getElementById('job-details').textContent = job.details;
+        document.getElementById('job-qty').textContent = `${job.quantity} étiquette${job.quantity > 1 ? 's' : ''}`;
+        document.getElementById('job-barcode').textContent = `Code-barres : ${job.barcode}`;
+
+        // 3. Build print zone
+        const printZone = document.getElementById('print-zone');
+        printZone.innerHTML = '';
+
+        for (let i = 0; i < job.quantity; i++) {
+            const label = document.createElement('div');
+            label.className = 'print-label';
+
+            const refDiv = document.createElement('div');
+            refDiv.className = 'print-ref';
+            refDiv.textContent = job.details;
+            label.appendChild(refDiv);
+
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = `ps-bc-${i}`;
+            label.appendChild(svg);
+
+            printZone.appendChild(label);
+        }
+
+        // 4. Render barcodes
+        for (let i = 0; i < job.quantity; i++) {
+            const barcodeOpts = {
+                width: 2, height: 55,
+                displayValue: true, fontSize: 11,
+                margin: 0, marginLeft: 2, marginRight: 2,
+                background: '#ffffff', lineColor: '#000000'
+            };
+            try {
+                JsBarcode(`#ps-bc-${i}`, job.barcode, { ...barcodeOpts, format: 'EAN13' });
+            } catch(e) {
+                JsBarcode(`#ps-bc-${i}`, job.barcode, { ...barcodeOpts, format: 'CODE128' });
+            }
+        }
+
+        // 5. Trigger print
+        window.print();
+
+        // 6. Mark as done in Supabase (anti-doublon)
+        try {
+            await markJobDone(job.id);
+        } catch(e) {
+            console.error('Could not mark job done:', e);
+        }
+
+        // 7. Add to history
+        addToHistory(job);
+
+        // 8. Reset UI after short delay
+        await new Promise(r => setTimeout(r, 1500));
+        jobCard.classList.remove('active');
+        document.getElementById('idle-card').style.opacity = '1';
+
+        // 9. Process next job
+        processNextJob();
+    }
+
+    // ============================================================
+    // HISTORY
+    // ============================================================
+    function addToHistory(job) {
+        const list = document.getElementById('history-list');
+        const empty = list.querySelector('.history-empty');
+        if (empty) empty.remove();
+
+        const now = new Date();
+        const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+            <span class="history-time">${time}</span>
+            <span class="history-details">${job.details}</span>
+            <span class="history-qty">×${job.quantity}</span>
+            <span class="history-status">✓ OK</span>
+        `;
+        list.insertBefore(item, list.firstChild);
+    }
+
+    // ============================================================
+    // CHECK PENDING JOBS ON STARTUP
+    // ============================================================
+    async function checkPendingJobsOnStartup() {
+        try {
+            const jobs = await sbFetch('print_queue?status=eq.pending&order=created_at.asc');
+            if (jobs && jobs.length > 0) {
+                console.log(`${jobs.length} job(s) en attente trouvé(s) au démarrage.`);
+                for (const job of jobs) {
+                    enqueueJob(job);
+                }
+            }
+        } catch(e) {
+            console.error('Erreur vérification jobs au démarrage:', e);
+        }
+    }
+
+    // ============================================================
+    // SUPABASE REALTIME SUBSCRIPTION
+    // ============================================================
+    const channel = client
+        .channel('print-station-v2')
+        .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'print_queue' },
+            (payload) => {
+                const job = payload.new;
+                // Only handle pending jobs (ignore if already claimed/done)
+                if (job.status !== 'pending') return;
+                console.log('Nouveau job reçu via Realtime:', job);
+                enqueueJob(job);
+            }
+        )
+        .subscribe((status) => {
+            console.log('Realtime status:', status);
+            if (status === 'SUBSCRIBED') {
+                setStatus('connected');
+                // Check for any jobs that arrived while we were offline
+                checkPendingJobsOnStartup();
+            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                setStatus('disconnected');
+            } else {
+                setStatus('connecting');
+            }
+        });
+
+    // ============================================================
+    // INIT ICONS
+    // ============================================================
+    lucide.createIcons();
+    </script>
+</body>
+</html>

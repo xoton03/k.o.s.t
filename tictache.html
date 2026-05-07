@@ -375,6 +375,16 @@
                     <span class="text-[9px] text-yellow-400 font-bold uppercase tracking-wider">Module Actif</span>
                 </div>
             </a>
+
+            <a href="station.html" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 group transition-all">
+                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center group-hover:bg-green-500/20">
+                    <i data-lucide="monitor" class="w-4 h-4 text-slate-400 group-hover:text-green-400"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight group-hover:text-white">Station d'Impression</span>
+                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">PC Bureau</span>
+                </div>
+            </a>
         </nav>
         <div class="absolute bottom-0 left-0 w-full p-6 border-t border-white/5">
             <div class="flex items-center gap-3 text-slate-500">
@@ -651,7 +661,7 @@
     });
 
     // ============================================================
-    // REMOTE PRINT FUNCTION
+    // REMOTE PRINT → SUPABASE print_queue INSERT
     // ============================================================
     document.getElementById('btn-remote-print').addEventListener('click', async () => {
         if (!currentBarcode) return;
@@ -665,22 +675,26 @@
         lucide.createIcons();
 
         try {
-            const payload = {
-                action: 'REMOTE_PRINT',
-                barcode: currentBarcode,
-                details: details,
-                quantity: qty
-            };
-
-            await fetch(GAS_PRINT_URL, {
+            // INSERT into print_queue
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/print_queue`, {
                 method: 'POST',
-                mode: 'no-cors', // GAS requires no-cors
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                    barcode: currentBarcode,
+                    details: details,
+                    quantity: qty,
+                    status: 'pending'
+                })
             });
 
-            // no-cors means we can't read the response, assume success
-            showToast(`✅ Ordre envoyé au bureau ! (${qty} étiquette${qty > 1 ? 's' : ''})`, 'success');
+            if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+
+            showToast(`⚡ Ordre envoyé à la station ! (${qty} étiquette${qty > 1 ? 's' : ''})`, 'success');
         } catch (err) {
             console.error('Remote print error:', err);
             showToast('Erreur d\'envoi — vérifiez votre connexion', 'error');
