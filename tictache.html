@@ -164,6 +164,35 @@
         }
         .barcode-placeholder svg { color: #374151; }
 
+        /* Copy Button */
+        .tt-copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #475569;
+            transition: all 0.2s;
+            z-index: 5;
+            backdrop-filter: blur(4px);
+        }
+        .tt-copy-btn:hover {
+            background: #22C55E;
+            color: #000;
+            border-color: #22C55E;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .tt-copy-btn:active {
+            transform: scale(0.9);
+        }
+
         /* ===== PRINT STYLES: 35mm x 35mm thermal label ===== */
         @media print {
             @page {
@@ -365,7 +394,10 @@
                 <div id="print-card" class="hidden" style="width:100%; max-width:420px; display:none; flex-direction:column; gap:1.25rem;">
 
                     <!-- Barcode Visual -->
-                    <div id="barcode-preview-area">
+                    <div id="barcode-preview-area" style="position: relative;">
+                        <button id="btn-copy-barcode" class="tt-copy-btn" title="Copier le code-barres">
+                            <i data-lucide="copy" style="width:16px; height:16px;"></i>
+                        </button>
                         <div class="barcode-ref-label" id="barcode-ref-display">---</div>
                         <svg id="barcode-svg"></svg>
                     </div>
@@ -494,6 +526,17 @@
         document.getElementById('current-time').textContent = `${hh}:${mm}`;
         document.getElementById('current-seconds').textContent = ss;
         document.getElementById('current-date').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+
+        // Day-based coloring
+        const dayIndex = now.getDay();
+        const dayColor = `var(--day-${dayIndex})`;
+        const clockContainer = document.getElementById('clock-container');
+        const secondsElement = document.getElementById('current-seconds');
+        const dateElement = document.getElementById('current-date');
+
+        if (clockContainer) clockContainer.style.borderColor = dayColor;
+        if (secondsElement) secondsElement.style.color = dayColor;
+        if (dateElement) dateElement.style.color = dayColor;
     }
     updateClock();
     setInterval(updateClock, 1000);
@@ -765,6 +808,43 @@
             lucide.createIcons();
         }
     });
+
+    // ============================================================
+    // COPY TO CLIPBOARD
+    // ============================================================
+    document.getElementById('btn-copy-barcode').addEventListener('click', () => {
+        if (!currentBarcode) return;
+        
+        // Convert to string in case it's a number
+        const textToCopy = String(currentBarcode);
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast('Code-barres copié !', 'success');
+            }).catch(err => {
+                console.error('Clipboard error:', err);
+                fallbackCopyTextToClipboard(textToCopy);
+            });
+        } else {
+            fallbackCopyTextToClipboard(textToCopy);
+        }
+    });
+
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed"; 
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast('Code-barres copié !', 'success');
+        } catch (err) {
+            showToast('Erreur lors de la copie', 'error');
+        }
+        document.body.removeChild(textArea);
+    }
 
     // Re-init icons after dynamic content
     lucide.createIcons();

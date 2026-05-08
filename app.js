@@ -221,9 +221,19 @@ function updateClock() {
     const timeElement = document.getElementById('current-time');
     const secondsElement = document.getElementById('current-seconds');
     const dateElement = document.getElementById('current-date');
+    const clockContainer = document.getElementById('clock-container');
+    
     if (timeElement) timeElement.textContent = timeStr;
     if (secondsElement) secondsElement.textContent = secStr;
     if (dateElement) dateElement.textContent = dateStr;
+
+    // Day-based coloring
+    const dayIndex = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const dayColor = `var(--day-${dayIndex})`;
+    
+    if (clockContainer) clockContainer.style.borderColor = dayColor;
+    if (secondsElement) secondsElement.style.color = dayColor;
+    if (dateElement) dateElement.style.color = dayColor;
 }
 setInterval(updateClock, 1000);
 updateClock();

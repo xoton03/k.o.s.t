@@ -2,9 +2,9 @@
   "name": "K.O.S.T.",
   "short_name": "KOST",
   "start_url": "index.html",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#0A0A0A",
-  "theme_color": "#22C55E",
+  "theme_color": "#0A0A0A",
   "icons": [
     {
       "src": "assets/logo.png",
