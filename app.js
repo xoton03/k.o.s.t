@@ -92,7 +92,8 @@ const btnCloseDrawer = document.getElementById('btn-close-drawer');
 lucide.createIcons();
 
 // Navigation Drawer Functions
-function openDrawer() {
+function openDrawer(e) {
+    if (e) e.preventDefault();
     navBackdrop.classList.remove('hidden');
     setTimeout(() => navBackdrop.classList.add('opacity-100'), 10);
     navDrawer.classList.remove('-translate-x-full');
