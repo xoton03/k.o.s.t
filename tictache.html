@@ -521,11 +521,12 @@
         const hh = String(now.getHours()).padStart(2, '0');
         const mm = String(now.getMinutes()).padStart(2, '0');
         const ss = String(now.getSeconds()).padStart(2, '0');
-        const days = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
-        const months = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
+        const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        const formattedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
         document.getElementById('current-time').textContent = `${hh}:${mm}`;
         document.getElementById('current-seconds').textContent = ss;
-        document.getElementById('current-date').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+        document.getElementById('current-date').textContent = formattedDate;
 
         // Day-based coloring
         const dayIndex = now.getDay();

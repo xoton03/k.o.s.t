@@ -215,7 +215,8 @@ function updateClock() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const secStr = now.getSeconds().toString().padStart(2, '0');
-    const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+    const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const formattedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
 
     // Desktop clock
     const timeElement = document.getElementById('current-time');
@@ -225,7 +226,7 @@ function updateClock() {
     
     if (timeElement) timeElement.textContent = timeStr;
     if (secondsElement) secondsElement.textContent = secStr;
-    if (dateElement) dateElement.textContent = dateStr;
+    if (dateElement) dateElement.textContent = formattedDate;
 
     // Day-based coloring
     const dayIndex = now.getDay(); // 0 (Sun) to 6 (Sat)
