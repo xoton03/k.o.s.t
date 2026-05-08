@@ -83,6 +83,7 @@ const searchLoader = document.getElementById('search-loader');
 
 // Navigation Drawer Elements
 const logoTrigger = document.getElementById('logo-trigger');
+const hamburgerTrigger = document.getElementById('hamburger-trigger');
 const navDrawer = document.getElementById('nav-drawer');
 const navBackdrop = document.getElementById('nav-backdrop');
 const btnCloseDrawer = document.getElementById('btn-close-drawer');
@@ -103,9 +104,10 @@ function closeDrawer() {
     setTimeout(() => navBackdrop.classList.add('hidden'), 300);
 }
 
-logoTrigger.addEventListener('click', openDrawer);
-btnCloseDrawer.addEventListener('click', closeDrawer);
-navBackdrop.addEventListener('click', closeDrawer);
+if (logoTrigger) logoTrigger.addEventListener('click', openDrawer);
+if (hamburgerTrigger) hamburgerTrigger.addEventListener('click', openDrawer);
+if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
+if (navBackdrop) navBackdrop.addEventListener('click', closeDrawer);
 
 // ============================================================
 // 3D PERSPECTIVE GRID BACKGROUND
