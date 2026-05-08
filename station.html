@@ -39,7 +39,7 @@
             backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
         }
         .header-brand {
             display: flex;
@@ -381,12 +381,19 @@
 <body>
     <!-- Header -->
     <header>
-        <!-- Logo trigger (opens drawer) -->
-        <div id="logo-trigger" style="display:flex; align-items:center; gap:0.75rem;" title="Ouvrir le menu">
-            <img src="assets/logo.png" alt="Logo K.O.S.T." style="width:36px; height:36px; border-radius:8px; object-fit:cover;">
-            <div class="header-brand">
-                <h1>K.O.S.T. — <span>Station d'Impression</span></h1>
-                <p>Mode récepteur automatique · PC Bureau</p>
+        <div style="display:flex; align-items:center; gap:1rem;">
+            <!-- Hamburger button -->
+            <button id="hamburger-trigger" class="p-2 -ml-2 text-slate-400 hover:text-[#22C55E] transition-all active:scale-90" title="Ouvrir le menu">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Logo trigger -->
+            <div id="logo-trigger" style="display:flex; align-items:center; gap:0.75rem; cursor:pointer;" title="Ouvrir le menu">
+                <img src="assets/logo.png" alt="Logo K.O.S.T." style="width:36px; height:36px; border-radius:8px; object-fit:cover;">
+                <div class="header-brand">
+                    <h1>K.O.S.T. — <span>Station d'Impression</span></h1>
+                    <p>Mode récepteur automatique · PC Bureau</p>
+                </div>
             </div>
         </div>
 
@@ -406,9 +413,9 @@
     </header>
 
     <!-- Navigation Drawer -->
-    <div id="nav-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity duration-300"></div>
-    <aside id="nav-drawer" class="fixed top-0 left-0 h-full w-72 bg-[#0f172a] border-r border-white/10 z-[200] -translate-x-full transition-transform duration-300 ease-out shadow-2xl">
-        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+    <div id="nav-backdrop"></div>
+    <aside id="nav-drawer">
+        <div class="drawer-header">
             <div class="flex items-center gap-3">
                 <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded">
                 <span class="text-white font-black tracking-tighter">NAVIGATEUR</span>
@@ -720,25 +727,32 @@
         });
 
     // ============================================================
-    // NAVIGATION DRAWER
+    // NAVIGATION DRAWER (Robust implementation)
     // ============================================================
-    const logoTrigger = document.getElementById('logo-trigger');
     const navDrawer   = document.getElementById('nav-drawer');
     const navBackdrop = document.getElementById('nav-backdrop');
-    const btnClose    = document.getElementById('btn-close-drawer');
 
-    function openDrawer()  {
-        navDrawer.classList.remove('-translate-x-full');
-        navBackdrop.classList.remove('hidden');
-        setTimeout(() => navBackdrop.classList.remove('opacity-0'), 10);
+    function openDrawer() {
+        if (!navDrawer || !navBackdrop) return;
+        navDrawer.classList.add('open');
+        navBackdrop.classList.add('open');
     }
+
     function closeDrawer() {
-        navDrawer.classList.add('-translate-x-full');
-        navBackdrop.classList.add('opacity-0');
-        setTimeout(() => navBackdrop.classList.add('hidden'), 300);
+        if (!navDrawer || !navBackdrop) return;
+        navDrawer.classList.remove('open');
+        navBackdrop.classList.remove('open');
     }
 
-    navBackdrop.addEventListener('click', closeDrawer);
+    // Assign listeners
+    const logoTrig = document.getElementById('logo-trigger');
+    const hambTrig = document.getElementById('hamburger-trigger');
+    const closeBtn = document.getElementById('btn-close-drawer');
+
+    if (logoTrig) logoTrig.onclick = (e) => { console.log('Logo clicked'); openDrawer(); };
+    if (hambTrig) hambTrig.onclick = (e) => { console.log('Hamburger clicked'); openDrawer(); };
+    if (closeBtn) closeBtn.onclick = closeDrawer;
+    if (navBackdrop) navBackdrop.onclick = closeDrawer;
 
     // ============================================================
     // CLOCK

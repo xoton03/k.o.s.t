@@ -410,7 +410,7 @@ if (modalSize) {
 
         if (!size) return;
 
-        searchLoader.classList.remove('hidden');
+        searchLoader.classList.add('hidden');
 
         try {
             const data = await supabaseFetch('produits_kiabi', 'code_barres,collection', { 
