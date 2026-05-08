@@ -590,6 +590,41 @@ if (editModal) {
     });
 }
 
+// Copy Barcode from Edit Modal
+const btnCopyEditBarcode = document.getElementById('btn-copy-edit-barcode');
+if (btnCopyEditBarcode) {
+    btnCopyEditBarcode.addEventListener('click', () => {
+        const barcodeInput = document.getElementById('edit-barcode');
+        const val = barcodeInput.value;
+        if (!val) return;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(val).then(() => {
+                showToast('Code copié !', 'success');
+            }).catch(err => {
+                console.error('Clipboard error:', err);
+                fallbackCopy(val);
+            });
+        } else {
+            fallbackCopy(val);
+        }
+    });
+}
+
+function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showToast('Code copié !', 'success');
+    } catch (err) {
+        showToast('Erreur copie', 'error');
+    }
+    document.body.removeChild(textArea);
+}
+
 // Save Edit Logic
 if (modalEditForm) {
     modalEditForm.addEventListener('submit', async (e) => {

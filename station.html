@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -386,6 +387,16 @@
                 <p>Mode récepteur automatique · PC Bureau</p>
             </div>
         </div>
+
+        <!-- Center Clock: Modern HUD Interface -->
+        <div id="clock-container" class="hidden md:flex">
+            <div class="time-block">
+                <span id="current-time">00:00</span>
+                <span id="current-seconds">00</span>
+            </div>
+            <div class="clock-divider"></div>
+            <div id="current-date">-- --- ----</div>
+        </div>
         <div class="status-badge connecting" id="status-badge">
             <div class="status-dot"></div>
             <span id="status-text">Connexion...</span>
@@ -706,9 +717,38 @@
         navBackdrop.classList.remove('open');
     }
 
-    logoTrigger.addEventListener('click', openDrawer);
-    btnClose.addEventListener('click', closeDrawer);
     navBackdrop.addEventListener('click', closeDrawer);
+
+    // ============================================================
+    // CLOCK
+    // ============================================================
+    function updateClock() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        
+        const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        const formattedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+        const timeEl = document.getElementById('current-time');
+        const secEl = document.getElementById('current-seconds');
+        const dateEl = document.getElementById('current-date');
+        const clockCont = document.getElementById('clock-container');
+
+        if (timeEl) timeEl.textContent = `${hh}:${mm}`;
+        if (secEl) secEl.textContent = ss;
+        if (dateEl) dateEl.textContent = formattedDate;
+
+        // Day-based coloring
+        const dayIndex = now.getDay();
+        const dayColor = `var(--day-${dayIndex})`;
+        if (clockCont) clockCont.style.borderColor = dayColor;
+        if (secEl) secEl.style.color = dayColor;
+        if (dateEl) dateEl.style.color = dayColor;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
     // ============================================================
     // INIT ICONS

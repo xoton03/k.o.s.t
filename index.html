@@ -196,7 +196,12 @@
                 </div>
                 <div class="input-group">
                     <label>Code-barre</label>
-                    <input type="text" id="edit-barcode" required class="w-full font-mono">
+                    <div class="relative">
+                        <input type="text" id="edit-barcode" required class="w-full font-mono pr-12">
+                        <button type="button" id="btn-copy-edit-barcode" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-cyan-400 transition-colors" title="Copier">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" id="btn-save-edit" class="btn-validate mt-4 h-14 text-sm w-full bg-cyan-500 hover:bg-cyan-600 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
                     SAUVEGARDER
