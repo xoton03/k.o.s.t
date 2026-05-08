@@ -857,8 +857,39 @@
         document.body.removeChild(textArea);
     }
 
+    // ============================================================
+    // NAVIGATION DRAWER (Robust implementation)
+    // ============================================================
+    const navDrawer   = document.getElementById('nav-drawer');
+    const navBackdrop = document.getElementById('nav-backdrop');
+
+    function openDrawer() {
+        if (!navDrawer || !navBackdrop) return;
+        navBackdrop.classList.remove('hidden');
+        setTimeout(() => navBackdrop.classList.add('opacity-100'), 10);
+        navDrawer.classList.remove('-translate-x-full');
+    }
+
+    function closeDrawer() {
+        if (!navDrawer || !navBackdrop) return;
+        navBackdrop.classList.remove('opacity-100');
+        navDrawer.classList.add('-translate-x-full');
+        setTimeout(() => navBackdrop.classList.add('hidden'), 300);
+    }
+
+    // Assign listeners
+    const logoTrig = document.getElementById('logo-trigger');
+    const hambTrig = document.getElementById('hamburger-trigger');
+    const closeBtn = document.getElementById('btn-close-drawer');
+
+    if (logoTrig) logoTrig.onclick = openDrawer;
+    if (hambTrig) hambTrig.onclick = openDrawer;
+    if (closeBtn) closeBtn.onclick = closeDrawer;
+    if (navBackdrop) navBackdrop.onclick = closeDrawer;
+
     // Re-init icons after dynamic content
     lucide.createIcons();
+    </script>
     
     <script src="updater.js" defer></script>
 </body>
