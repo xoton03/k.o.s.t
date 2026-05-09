@@ -94,32 +94,39 @@
 
             <div id="article-focus" class="hidden">
                 <div class="focus-card active">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <div class="label">Libellé Article</div>
-                            <div class="value text-2xl font-black" id="focus-title">T-SHIRT COTON PREMIUM</div>
-                        </div>
-                        <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1">
-                            <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">En Stock</span>
-                        </div>
-                    </div>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="flex-1 space-y-6 w-full">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="label">Libellé Article</div>
+                                    <div class="bg-orange-500/10 border border-orange-500/20 px-3 py-1 md:hidden">
+                                        <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">En Stock</span>
+                                    </div>
+                                </div>
+                                <div class="value text-2xl md:text-3xl font-black uppercase tracking-tight" id="focus-title">T-SHIRT COTON PREMIUM</div>
+                            </div>
 
-                    <div class="grid grid-cols-2 gap-8 mb-8">
-                        <div>
-                            <div class="label">GENCOD / Barcode</div>
-                            <div class="value font-mono" id="focus-barcode">3610123456789</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="label">GENCOD / Barcode</div>
+                                    <div class="value font-mono text-sm" id="focus-barcode">3610123456789</div>
+                                </div>
+                                <div>
+                                    <div class="label">Référence</div>
+                                    <div class="value font-mono text-sm" id="focus-ref">AX452</div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="label">Référence</div>
-                            <div class="value font-mono" id="focus-ref">AX452</div>
-                        </div>
-                    </div>
 
-                    <div class="border-t border-white/5 pt-8">
-                        <div class="label">Prix de Vente</div>
-                        <div class="flex items-baseline gap-4">
-                            <span class="old-price" id="focus-old-price">1900 DA</span>
-                            <span class="price-tag" id="focus-price">1500 DA</span>
+                        <div class="w-full md:w-auto border-t md:border-t-0 md:border-l border-white/5 pt-6 md:pt-0 md:pl-10 flex flex-col items-start md:items-end">
+                            <div class="hidden md:block bg-orange-500/10 border border-orange-500/20 px-3 py-1 mb-6">
+                                <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">En Stock</span>
+                            </div>
+                            <div class="label md:text-right">Prix de Vente</div>
+                            <div class="flex flex-col items-start md:items-end">
+                                <span class="old-price" id="focus-old-price">1900 DA</span>
+                                <span class="price-tag text-4xl md:text-6xl" id="focus-price">1500 DA</span>
+                            </div>
                         </div>
                     </div>
 
