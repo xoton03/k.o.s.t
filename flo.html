@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K.O.S.T. - Flo Stock</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/favicon.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="navigation.js" defer></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Mobile-first card grid */
+        @media (max-width: 768px) {
+            .results-table {
+                display: none;
+            }
+            .results-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .scan-btn {
+                display: flex !important;
+            }
+        }
+        @media (min-width: 769px) {
+            .results-grid {
+                display: none;
+            }
+            .scan-btn {
+                display: none !important;
+            }
+        }
+
+        .stock-card {
+            background: var(--surface-charcoal);
+            border: 1px solid var(--border-dim);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stock-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--day-3); /* Wednesday yellow as accent for Flo */
+        }
+
+        .stock-card .price {
+            font-family: var(--font-headline);
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+        }
+
+        .search-container input {
+            padding-left: 3rem !important;
+            width: 100%;
+        }
+
+        .btn-offline {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            color: #94A3B8;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-headline);
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-offline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body class="bg-[#0A0A0A] text-slate-300">
+
+    <header class="flex items-center justify-between px-4 sm:px-6 bg-slate-900 border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <!-- Hamburger button -->
+            <button id="hamburger-trigger" class="p-3 -ml-2 text-slate-400 hover:text-purple-400 transition-all active:scale-90" title="Ouvrir le menu">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <div id="logo-trigger" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-all active:scale-95 select-none">
+                <img src="assets/logo.png" alt="K.O.S.T Logo" class="w-9 h-9 rounded-md object-cover shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0 border border-purple-500/30">
+                <h1 class="text-white font-extrabold text-xl tracking-tighter">
+                    <span class="text-purple-500">F</span>LO
+                </h1>
+            </div>
+        </div>
+        
+        <!-- Center Clock: Modern HUD Interface -->
+        <div id="clock-container">
+            <div class="time-block">
+                <span id="current-time">00:00</span>
+                <span id="current-seconds">00</span>
+            </div>
+            <div class="clock-divider"></div>
+            <div id="current-date">-- --- ----</div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="btn-offline-sync" class="btn-offline" title="Mode Hors-ligne">
+                <i data-lucide="download-cloud" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Offline Access</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex flex-col h-full overflow-hidden">
+        <!-- Search Bar Section -->
+        <div class="p-4 sm:p-6 bg-slate-900/50 border-b border-white/5">
+            <div class="max-w-4xl mx-auto flex gap-3">
+                <div class="search-container flex-1">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                    <input type="text" id="search-input" placeholder="RECHERCHER GENCOD OU RÉFÉRENCE..." autocomplete="off">
+                </div>
+                <button id="btn-scan" class="scan-btn bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-none transition-colors items-center justify-center hidden">
+                    <i data-lucide="scan-barcode" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="flex-1 overflow-auto bg-[#0A0A0A]">
+            
+            <!-- Desktop Table -->
+            <div class="results-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-48">GENCOD</th>
+                            <th class="w-32">RÉFÉRENCE</th>
+                            <th>LIBELLÉ ARTICLE</th>
+                            <th class="w-32 text-right">PRIX</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body-desktop">
+                        <!-- Placeholder Row 1 -->
+                        <tr>
+                            <td class="font-mono text-xs">3610000123456</td>
+                            <td class="font-bold text-purple-400">A1B2C</td>
+                            <td class="uppercase font-medium">T-shirt Coton Bio - Noir</td>
+                            <td class="text-right font-black text-white">15.00€</td>
+                        </tr>
+                        <!-- Placeholder Row 2 -->
+                        <tr>
+                            <td class="font-mono text-xs">3610000987654</td>
+                            <td class="font-bold text-purple-400">X9Y8Z</td>
+                            <td class="uppercase font-medium">Jean Slim Denim - Brut</td>
+                            <td class="text-right font-black text-white">29.99€</td>
+                        </tr>
+                        <!-- Placeholder Row 3 -->
+                        <tr>
+                            <td class="font-mono text-xs">3610000555444</td>
+                            <td class="font-bold text-purple-400">M4N5O</td>
+                            <td class="uppercase font-medium">Sweat à Capuche - Gris Chine</td>
+                            <td class="text-right font-black text-white">25.00€</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Grid -->
+            <div class="results-grid" id="results-body-mobile">
+                <!-- Placeholder Card 1 -->
+                <div class="stock-card">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">3610000123456</span>
+                        <span class="text-xs font-black text-purple-400">A1B2C</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">T-shirt Coton Bio - Noir</h3>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="price">15.00€</span>
+                        <span class="text-[9px] bg-slate-800 px-2 py-1 rounded text-slate-400 font-bold uppercase">En Stock</span>
+                    </div>
+                </div>
+                <!-- Placeholder Card 2 -->
+                <div class="stock-card">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">3610000987654</span>
+                        <span class="text-xs font-black text-purple-400">X9Y8Z</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">Jean Slim Denim - Brut</h3>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="price">29.99€</span>
+                        <span class="text-[9px] bg-slate-800 px-2 py-1 rounded text-slate-400 font-bold uppercase">En Stock</span>
+                    </div>
+                </div>
+                <!-- Placeholder Card 3 -->
+                <div class="stock-card">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">3610000555444</span>
+                        <span class="text-xs font-black text-purple-400">M4N5O</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">Sweat à Capuche - Gris Chine</h3>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="price">25.00€</span>
+                        <span class="text-[9px] bg-slate-800 px-2 py-1 rounded text-slate-400 font-bold uppercase">En Stock</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Navigation Drawer -->
+    <div id="nav-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity duration-300"></div>
+    <aside id="nav-drawer" class="fixed top-0 left-0 h-full w-72 bg-[#0f172a] border-r border-white/10 z-[200] -translate-x-full transition-transform duration-300 ease-out shadow-2xl">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="assets/logo.png" alt="Logo" class="w-8 h-8 rounded">
+                <span class="text-white font-black tracking-tighter">MENU PRINCIPAL</span>
+            </div>
+            <button id="btn-close-drawer" class="text-slate-500 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <nav class="p-4 space-y-2">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] px-3 mb-4">Modules Disponibles</div>
+            
+            <a href="index.html" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 group transition-all">
+                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center group-hover:bg-[#22C55E]/20">
+                    <i data-lucide="scan-barcode" class="w-4 h-4 text-slate-400 group-hover:text-[#22C55E]"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight group-hover:text-white">Checkage sans ticket</span>
+                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Inventaire</span>
+                </div>
+            </a>
+
+            <a href="tictache.html" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 group transition-all">
+                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center group-hover:bg-yellow-400/20">
+                    <i data-lucide="tag" class="w-4 h-4 text-slate-400 group-hover:text-yellow-400"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight group-hover:text-white">Ticketage sans ticket</span>
+                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Impression Mobile</span>
+                </div>
+            </a>
+
+            <a href="station.html" class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 group transition-all">
+                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center group-hover:bg-cyan-500/20">
+                    <i data-lucide="monitor" class="w-4 h-4 text-slate-400 group-hover:text-cyan-400"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight group-hover:text-white">Station d'Impression</span>
+                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">PC Bureau</span>
+                </div>
+            </a>
+
+            <a href="flo.html" class="flex items-center gap-4 px-4 py-3 rounded-lg bg-purple-500/10 border border-purple-500/20 text-white group transition-all">
+                <div class="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-purple-400"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold leading-tight">Flo</span>
+                    <span class="text-[9px] text-purple-400 font-bold uppercase tracking-wider">Module Actif</span>
+                </div>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 w-full p-6 border-t border-white/5">
+            <div class="flex items-center gap-3 text-slate-500">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                <span class="text-xs font-bold uppercase tracking-widest">Paramètres</span>
+            </div>
+        </div>
+    </aside>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // ============================================================
+        // CLOCK
+        // ============================================================
+        function updateClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const formattedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+            const timeEl = document.getElementById('current-time');
+            const secEl = document.getElementById('current-seconds');
+            const dateEl = document.getElementById('current-date');
+            const clockCont = document.getElementById('clock-container');
+
+            if (timeEl) timeEl.textContent = `${hh}:${mm}`;
+            if (secEl) secEl.textContent = ss;
+            if (dateEl) dateEl.textContent = formattedDate;
+
+            // Day-based coloring
+            const dayIndex = now.getDay();
+            const dayColor = `var(--day-${dayIndex})`;
+            if (clockCont) clockCont.style.borderColor = dayColor;
+            if (secEl) secEl.style.color = dayColor;
+            if (dateEl) dateEl.style.color = dayColor;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // ============================================================
+        // INIT ICONS
+        // ============================================================
+        lucide.createIcons();
+    </script>
+    
+    <script src="updater.js" defer></script>
+</body>
+</html>

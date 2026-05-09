@@ -1,9 +1,10 @@
-const CACHE_NAME = 'kost-v3';
+const CACHE_NAME = 'kost-v4';
 const urlsToCache = [
   './',
   './index.html',
   './tictache.html',
   './station.html',
+  './flo.html',
   './styles.css',
   './app.js',
   './assets/favicon.png',
