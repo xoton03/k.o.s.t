@@ -81,34 +81,12 @@ const btnCloseModal = document.getElementById('btn-close-modal');
 const modalSearchForm = document.getElementById('modal-search-form');
 const searchLoader = document.getElementById('search-loader');
 
-// Navigation Drawer Elements
-const logoTrigger = document.getElementById('logo-trigger');
-const hamburgerTrigger = document.getElementById('hamburger-trigger');
-const navDrawer = document.getElementById('nav-drawer');
-const navBackdrop = document.getElementById('nav-backdrop');
-const btnCloseDrawer = document.getElementById('btn-close-drawer');
+
 
 // Initialize Lucide Icons
 lucide.createIcons();
 
-// Navigation Drawer Functions
-function openDrawer(e) {
-    if (e) e.preventDefault();
-    navBackdrop.classList.remove('hidden');
-    setTimeout(() => navBackdrop.classList.add('opacity-100'), 10);
-    navDrawer.classList.remove('-translate-x-full');
-}
 
-function closeDrawer() {
-    navBackdrop.classList.remove('opacity-100');
-    navDrawer.classList.add('-translate-x-full');
-    setTimeout(() => navBackdrop.classList.add('hidden'), 300);
-}
-
-if (logoTrigger) logoTrigger.addEventListener('click', openDrawer);
-if (hamburgerTrigger) hamburgerTrigger.addEventListener('click', openDrawer);
-if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
-if (navBackdrop) navBackdrop.addEventListener('click', closeDrawer);
 
 // ============================================================
 // 3D PERSPECTIVE GRID BACKGROUND
