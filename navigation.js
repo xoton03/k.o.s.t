@@ -38,10 +38,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    if (logoTrigger) logoTrigger.addEventListener('click', openDrawer);
-    if (hamburgerTrigger) hamburgerTrigger.addEventListener('click', openDrawer);
-    if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
-    if (navBackdrop) navBackdrop.addEventListener('click', closeDrawer);
+    const triggers = [logoTrigger, hamburgerTrigger];
+    triggers.forEach(trigger => {
+        if (trigger) {
+            trigger.addEventListener('click', openDrawer);
+            trigger.addEventListener('touchstart', openDrawer, { passive: false });
+        }
+    });
+
+    if (btnCloseDrawer) {
+        btnCloseDrawer.addEventListener('click', closeDrawer);
+        btnCloseDrawer.addEventListener('touchstart', closeDrawer, { passive: false });
+    }
+    
+    if (navBackdrop) {
+        navBackdrop.addEventListener('click', closeDrawer);
+        navBackdrop.addEventListener('touchstart', closeDrawer, { passive: false });
+    }
 
     // Close on escape key
     document.addEventListener('keydown', (e) => {
