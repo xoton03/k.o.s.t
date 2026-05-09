@@ -27,6 +27,8 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         /* ===== HEADER ===== */
@@ -41,6 +43,11 @@
             position: sticky;
             top: 0;
             z-index: 100;
+        }
+        @media (max-width: 768px) {
+            header {
+                padding: 0.75rem 1rem;
+            }
         }
         .header-brand {
             display: flex;

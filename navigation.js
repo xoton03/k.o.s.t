@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openDrawer(e) {
         if (e) e.preventDefault();
         navBackdrop.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Lock scroll
         // Small delay to allow 'hidden' removal before opacity transition
         setTimeout(() => {
             navBackdrop.classList.add('opacity-100');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Wait for transition to complete before hiding
         setTimeout(() => {
             navBackdrop.classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scroll
         }, 300);
     }
 
