@@ -4,29 +4,31 @@
 */
 
 :root {
+    /* Industrial System Tokens */
     --bg-industrial: #0A0A0A;
-    --surface-charcoal: #171717;
-    --surface-slate: #262626;
-    --primary-green: #22C55E;
-    --accent-cyan: #22D3EE;
-    --border-dim: #333333;
+    --surface-tech: #121212;
+    --accent-orange: #FF6D00;
+    --accent-orange-dim: rgba(255, 109, 0, 0.2);
+    --border-tech: #222222;
+    --text-dim: #666666;
     
+    /* LED Status Colors */
+    --led-red: #FF3333;
+    --led-green: #22C55E;
+    --led-orange: #FF6D00;
+    --led-blue: #22D3EE;
+
     --font-headline: 'Space Grotesk', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    /* Day of week colors */
-    --day-0: #5856D6; /* Sunday: Purple */
-    --day-1: #FF3B30; /* Monday: Red */
-    --day-2: #FF9500; /* Tuesday: Orange */
-    --day-3: #FFCC00; /* Wednesday: Yellow */
-    --day-4: #4CD964; /* Thursday: Green */
-    --day-5: #5AC8FA; /* Friday: Cyan */
-    --day-6: #007AFF; /* Saturday: Blue */
-
-    /* FLO Module Specifics */
-    --flo-orange: #FF6D00;
-    --flo-orange-dim: #582100;
-    --flo-surface: #1A1A1A;
+    /* Legacy / Day Colors */
+    --day-0: #5856D6;
+    --day-1: #FF3B30;
+    --day-2: #FF9500;
+    --day-3: #FFCC00;
+    --day-4: #4CD964;
+    --day-5: #5AC8FA;
+    --day-6: #007AFF;
 }
 
 * {
@@ -74,6 +76,44 @@ h1, h2, h3 {
     letter-spacing: -0.02em;
 }
 
+/* Technical Typography */
+.tech-font { font-family: var(--font-headline); }
+.uppercase-wide { text-transform: uppercase; letter-spacing: 0.15em; }
+.text-dim { color: var(--text-dim); }
+
+/* LED STATUS SYSTEM */
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.led {
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    background: #333;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-badge.connected .led { 
+    background: var(--led-green); 
+    box-shadow: 0 0 12px var(--led-green); 
+}
+.status-badge.disconnected .led { 
+    background: var(--led-red); 
+    box-shadow: 0 0 12px var(--led-red); 
+}
+.status-badge.connecting .led { 
+    background: var(--led-orange); 
+    animation: led-pulse 1s infinite; 
+}
+
+@keyframes led-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--led-orange); }
+    50% { opacity: 0.3; box-shadow: none; }
+}
+
 /* Layout Parts */
 header {
     height: 55px;
@@ -107,24 +147,90 @@ main {
     }
 }
 
-#clock-container {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 50;
+/* ===== INDUSTRIAL LAYOUT SYSTEM ===== */
+.telemetry-header {
+    height: 65px;
+    background: #000;
+    border-bottom: 1px solid var(--border-tech);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.status-panel {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    background: transparent;
-    backdrop-filter: none;
-    border: none;
-    padding: 0.4rem 2rem;
-    border-radius: 8px;
-    box-shadow: none;
-    border-left: 4px solid var(--primary-green);
-    transform: translate(-50%, -50%);
-    transition: border-color 0.5s ease;
+    background: var(--surface-tech);
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-tech);
+}
+
+.indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.indicator-label {
+    font-family: var(--font-headline);
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+}
+
+.monitoring-zone {
+    padding: 2rem;
+    border-right: 1px solid var(--border-tech);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.data-log-zone {
+    background: #050505;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-tag {
+    font-family: var(--font-headline);
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: var(--accent-orange);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.section-tag::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border-tech), transparent);
+}
+
+@keyframes led-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--led-orange); }
+    50% { opacity: 0.3; box-shadow: none; }
+}
+
+@media (max-width: 1024px) {
+    .monitoring-zone { border-right: none; border-bottom: 1px solid var(--border-tech); }
+    .data-log-zone { min-height: 400px; }
+}
+
+@media (max-width: 640px) {
+    .telemetry-header { height: auto; padding: 1rem; flex-direction: column; gap: 1rem; }
+    .status-panel { width: 100%; justify-content: center; }
 }
 
 .time-block {

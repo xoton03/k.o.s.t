@@ -18,12 +18,10 @@
     <script src="navigation.js" defer></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        /* Station Specific Adjustments */
         body {
-            background: #070707;
-            color: #fff;
-            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-industrial);
+            color: #e2e8f0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -31,342 +29,248 @@
             overflow-x: hidden;
         }
 
+        /* ===== MAIN DASHBOARD COMPONENTS ===== */
+        /* Specific to Station Module */
 
-
-        /* ===== LEFT COLUMN: Status + Current Job ===== */
-        .col-left {
+        /* Idle State Card */
+        .idle-screen {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        /* Idle card */
-        .idle-card {
-            background: #0f0f0f;
-            border: 1px solid #1e293b;
-            border-radius: 12px;
-            padding: 3rem 2rem;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1.25rem;
+            border: 1px dashed #222;
+            padding: 4rem;
             text-align: center;
-            transition: all 0.3s;
-        }
-        .idle-icon {
-            width: 72px; height: 72px;
-            border-radius: 50%;
-            background: #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #334155;
-        }
-        .idle-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-        }
-        .idle-sub {
-            font-size: 0.65rem;
-            color: #334155;
-            line-height: 1.6;
+            opacity: 0.6;
         }
 
-        /* Active print job card */
+        .idle-code {
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 1rem;
+        }
+
+        /* Active Job Card (Brutalist) */
         .job-card {
-            background: #052e16;
-            border: 2px solid #22C55E;
-            border-radius: 12px;
-            padding: 2rem;
             display: none;
             flex-direction: column;
-            gap: 1rem;
-            animation: job-appear 0.3s ease-out;
+            border: 2px solid var(--accent-orange);
+            background: rgba(255, 109, 0, 0.03);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .job-card.active { display: flex; }
-        @keyframes job-appear {
-            from { opacity: 0; transform: translateY(10px); }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .job-badge {
-            font-size: 0.6rem;
-            font-weight: 900;
-            color: #22C55E;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .job-badge::before {
+
+        /* Scanning Line Animation */
+        .job-card::after {
             content: '';
-            width: 6px; height: 6px;
-            background: #22C55E;
-            border-radius: 50%;
-            animation: pulse-dot 0.8s infinite;
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--accent-orange);
+            box-shadow: 0 0 15px var(--accent-orange);
+            animation: scan 3s linear infinite;
         }
-        .job-details {
-            font-size: 1.1rem;
-            font-weight: 900;
-            color: #fff;
-            letter-spacing: 0.05em;
-        }
-        .job-qty {
-            font-size: 0.75rem;
-            color: #4ade80;
-            font-weight: 700;
-        }
-        .job-barcode {
-            font-size: 0.65rem;
-            color: #475569;
-            font-family: monospace;
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(400px); }
         }
 
-        /* ===== RIGHT COLUMN: History ===== */
-        .col-right {
-            width: 320px;
-            flex-shrink: 0;
+        .job-header {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
         }
-        .section-label {
-            font-size: 0.6rem;
+
+        .job-status-pill {
+            background: var(--accent-orange);
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
             font-weight: 900;
-            color: #475569;
             text-transform: uppercase;
-            letter-spacing: 0.25em;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #1e293b;
         }
-        #history-list {
+
+        .job-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .job-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--accent-orange-dim);
+            padding-top: 2rem;
+        }
+
+        .meta-item {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            overflow-y: auto;
-            max-height: calc(100vh - 200px);
         }
-        .history-empty {
-            font-size: 0.65rem;
-            color: #334155;
-            text-align: center;
-            padding: 2rem 0;
-        }
-        .history-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: #0f0f0f;
-            border: 1px solid #1e293b;
-            border-radius: 8px;
-            transition: border-color 0.2s;
-        }
-        .history-item:hover { border-color: #334155; }
-        .history-time { font-size: 0.65rem; color: #475569; flex-shrink: 0; font-variant-numeric: tabular-nums; }
-        .history-details { flex: 1; font-size: 0.7rem; color: #94a3b8; line-height: 1.3; }
-        .history-qty {
-            font-size: 0.8rem;
-            font-weight: 900;
-            color: #22C55E;
-            flex-shrink: 0;
-        }
-        .history-status {
-            font-size: 0.55rem;
+
+        .meta-label {
+            font-size: 0.6rem;
             font-weight: 800;
-            color: #22C55E;
-            background: #052e16;
-            border: 1px solid #166534;
-            padding: 0.1rem 0.4rem;
-            border-radius: 3px;
-            letter-spacing: 0.1em;
+            color: var(--text-dim);
             text-transform: uppercase;
-            flex-shrink: 0;
+            letter-spacing: 0.1em;
         }
 
-        /* ===== LAYOUT & RESPONSIVE ===== */
-        main {
+        .meta-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* ===== HISTORY / DATA LOG ===== */
+        #history-list {
             flex: 1;
-            display: flex;
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
+            overflow-y: auto;
+            padding: 1px;
         }
 
-        @media (max-width: 768px) {
-            main {
-                flex-direction: column;
-                padding: 1rem;
-                gap: 1rem;
-                margin-top: 0;
-            }
-            .col-left {
-                gap: 1rem;
-            }
-            .idle-card {
-                padding: 1.5rem 1rem;
-                gap: 0.75rem;
-            }
-            .idle-icon {
-                width: 48px;
-                height: 48px;
-            }
-            .idle-icon i {
-                width: 24px !important;
-                height: 24px !important;
-            }
-            .idle-title {
-                font-size: 0.75rem;
-            }
-            .idle-sub {
-                font-size: 0.6rem;
-            }
-            .job-card {
-                padding: 1.25rem;
-                gap: 0.75rem;
-            }
-            .job-details {
-                font-size: 0.9rem;
-            }
-            .col-right {
-                width: 100%;
-                margin-top: 1rem;
-            }
-            #history-list {
-                max-height: none;
-            }
+        .history-item {
+            display: grid;
+            grid-template-columns: 60px 1fr 80px 60px;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-tech);
+            background: transparent;
+            transition: background 0.2s;
+        }
+        .history-item:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .history-time { font-family: monospace; font-size: 0.7rem; color: var(--text-dim); }
+        .history-details { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; }
+        .history-qty { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 900; color: var(--accent-orange); text-align: right; padding-right: 1rem; }
+        .history-status { font-family: 'Space Grotesk', sans-serif; font-size: 0.55rem; font-weight: 900; color: var(--led-green); text-align: right; }
+
+        .history-empty {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
-        /* Logo trigger cursor */
-        #logo-trigger { cursor: pointer; user-select: none; }
-        #logo-trigger:hover img { opacity: 0.85; }
-        #logo-trigger img { transition: opacity 0.15s; }
+        /* ===== NAVIGATION REUSE ===== */
+        #nav-drawer { border-radius: 0 !important; }
+        .sidebar-item { border-radius: 0 !important; }
+
+        @media (max-width: 640px) {
+            .job-title { font-size: 1.5rem; }
+            .job-meta-grid { grid-template-columns: 1fr; gap: 1rem; }
+        }
 
         /* ===== PRINT ZONE ===== */
         #print-zone { display: none; }
 
         @media print {
             @page { size: 35mm 35mm; margin: 0; }
-            html, body {
-                margin: 0; padding: 0;
-                background: #fff !important;
-                width: 35mm; height: 35mm;
-            }
+            html, body { margin: 0; padding: 0; background: #fff !important; width: 35mm; height: 35mm; }
             body > *:not(#print-zone) { display: none !important; }
-            #print-zone {
-                display: block !important;
-                position: fixed;
-                top: 0; left: 0;
-                width: 35mm; height: 35mm;
-            }
-            .print-label {
-                width: 35mm; height: 35mm;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 0; margin: 0;
-                page-break-after: always;
-                overflow: hidden;
-            }
+            #print-zone { display: block !important; position: fixed; top: 0; left: 0; width: 35mm; height: 35mm; }
+            .print-label { width: 35mm; height: 35mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; margin: 0; page-break-after: always; overflow: hidden; }
             .print-label svg { width: 35mm; max-width: 35mm; height: auto; display: block; }
-            .print-ref {
-                font-family: 'Space Grotesk', sans-serif;
-                font-size: 5pt;
-                font-weight: 900;
-                text-transform: uppercase;
-                text-align: center;
-                letter-spacing: 0.04em;
-                line-height: 1.2;
-                margin: 0; padding: 0;
-                color: #000;
-            }
+            .print-ref { font-family: 'Space Grotesk', sans-serif; font-size: 5pt; font-weight: 900; text-transform: uppercase; text-align: center; letter-spacing: 0.04em; line-height: 1.2; margin: 0; padding: 0; color: #000; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="flex items-center justify-between px-4 sm:px-6 bg-slate-900 border-b border-white/5 sticky top-0 z-[100] h-[55px] sm:h-[60px]">
-        <div class="flex items-center gap-3">
-            <!-- Hamburger button -->
-            <button id="hamburger-trigger" class="p-3 -ml-3 text-slate-400 hover:text-[#22C55E] transition-all active:scale-90" title="Ouvrir le menu">
+    <!-- Telemetry Header -->
+    <header class="telemetry-header">
+        <div class="flex items-center gap-6">
+            <button id="hamburger-trigger" class="text-white hover:text-[#FF6D00] transition-colors">
                 <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
+            <div class="flex flex-col">
+                <span class="tech-font text-xs font-black text-[#FF6D00] uppercase tracking-wider">K.O.S.T. SYSTEM V3.1</span>
+                <span class="tech-font text-[10px] font-bold text-white/40 uppercase tracking-widest">STATION D'IMPRESSION // RECEIVER</span>
+            </div>
+        </div>
 
-            <!-- Logo trigger -->
-            <div id="logo-trigger" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-all active:scale-95 select-none" title="Ouvrir le menu">
-                <img src="assets/logo.png" alt="Logo K.O.S.T." class="w-9 h-9 rounded-md object-cover shadow-[0_0_15px_rgba(34,197,94,0.3)] shrink-0 border border-[#22C55E]/30">
-                <div class="flex flex-col leading-tight">
-                    <h1 class="text-white font-extrabold text-sm sm:text-base tracking-tighter uppercase">
-                        K.O.S.T. — <span class="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">Station</span>
-                    </h1>
-                    <p class="text-[8px] sm:text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] hidden sm:block">Automated Receiver Mode</p>
+        <div class="status-panel">
+            <div class="indicator">
+                <div id="status-badge" class="status-badge connecting">
+                    <div class="led"></div>
                 </div>
+                <span id="status-text" class="indicator-label">SUPABASE: SYNCING...</span>
             </div>
-        </div>
-
-        <!-- Center Clock -->
-        <div id="clock-container" class="hidden md:flex items-center gap-4 px-6 py-1.5 bg-black/40 border border-white/5 rounded-full">
-            <div class="flex items-baseline gap-1">
-                <span id="current-time" class="text-lg font-black text-white tabular-nums tracking-tighter">00:00</span>
-                <span id="current-seconds" class="text-[10px] font-bold text-emerald-500 tabular-nums w-4">00</span>
-            </div>
-            <div class="w-px h-4 bg-white/10"></div>
-            <div id="current-date" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">-- --- ----</div>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 px-3 py-1 rounded-full border border-slate-700 bg-slate-800/50 text-[10px] font-bold uppercase tracking-widest" id="status-badge">
-                <div class="w-2 h-2 rounded-full bg-slate-500" id="status-dot"></div>
-                <span id="status-text" class="text-slate-300 hidden sm:inline">Connexion...</span>
+            <div class="indicator">
+                <div class="status-badge connected">
+                    <div class="led"></div>
+                </div>
+                <span class="indicator-label">PRINTER: READY</span>
             </div>
         </div>
     </header>
 
 
 
-    <!-- Main -->
+    <!-- Main Dashboard -->
     <main>
-        <!-- Left: current state -->
-        <div class="col-left">
-
-            <!-- Idle state -->
-            <div class="idle-card" id="idle-card">
-                <div class="idle-icon">
-                    <i data-lucide="printer" style="width:32px;height:32px;"></i>
-                </div>
-                <div class="idle-title">Station en attente</div>
-                <p class="idle-sub">
-                    Les ordres d'impression envoyés depuis l'application mobile<br>
-                    seront imprimés automatiquement ici.
-                </p>
+        <div class="monitoring-zone">
+            <div class="section-tag">ZONE DE MONITORING // FLUX TEMPS RÉEL</div>
+            
+            <!-- Idle State -->
+            <div class="idle-screen" id="idle-card">
+                <i data-lucide="printer" class="w-12 h-12 text-[#FF6D00] mb-6 opacity-40"></i>
+                <h2 class="tech-font text-xl font-black uppercase tracking-tight">Station en attente</h2>
+                <p class="text-xs text-white/40 mt-2 max-w-xs">Le terminal est prêt à recevoir les ordres d'impression. Gardez cet onglet ouvert pour traiter les étiquettes en arrière-plan.</p>
+                <div class="idle-code">[ WAITING_FOR_SYNC_STREAM ]</div>
             </div>
 
-            <!-- Active job -->
+            <!-- Active Job Card -->
             <div class="job-card" id="job-card">
-                <div class="job-badge">Impression en cours</div>
-                <div class="job-details" id="job-details">---</div>
-                <div class="job-qty" id="job-qty">---</div>
-                <div class="job-barcode" id="job-barcode">---</div>
+                <div class="job-header">
+                    <div class="job-status-pill">PRINT_ACTIVE</div>
+                    <div class="tech-font text-[10px] text-white/40">JOB_ID: <span id="job-id-display">#----</span></div>
+                </div>
+                
+                <h1 class="job-title" id="job-details">CHARGEMENT...</h1>
+                
+                <div class="job-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">QUANTITÉ</span>
+                        <span class="meta-value" id="job-qty">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">CODE BARRES</span>
+                        <span class="meta-value" id="job-barcode">--</span>
+                    </div>
+                </div>
             </div>
-
         </div>
 
-        <!-- Right: history -->
-        <div class="col-right">
-            <div class="section-label">Historique de session</div>
+        <aside class="data-log-zone">
+            <div class="log-header">
+                <div class="section-tag">TELEMETRY_LOG // HISTORY</div>
+            </div>
             <div id="history-list">
-                <p class="history-empty">Aucune impression dans cette session.</p>
+                <div class="history-empty">AUCUNE DONNÉE DE TÉLÉMÉTRIE DISPONIBLE</div>
             </div>
-        </div>
+        </aside>
     </main>
 
     <!-- Hidden print zone -->
@@ -388,9 +292,15 @@
     function setStatus(state) {
         const badge = document.getElementById('status-badge');
         const text  = document.getElementById('status-text');
+        if (!badge || !text) return;
+        
         badge.className = `status-badge ${state}`;
-        const labels = { connected: 'Connectée', disconnected: 'Déconnectée', connecting: 'Connexion...' };
-        text.textContent = labels[state] || 'Inconnu';
+        const labels = { 
+            connected: 'SUPABASE: ONLINE', 
+            disconnected: 'SUPABASE: OFFLINE', 
+            connecting: 'SUPABASE: SYNCING...' 
+        };
+        text.textContent = labels[state] || 'SUPABASE: UNKNOWN';
     }
 
     // ============================================================
@@ -451,12 +361,17 @@
         }
 
         // 2. Show active job UI
-        document.getElementById('idle-card').style.opacity = '0.3';
+        const idleCard = document.getElementById('idle-card');
         const jobCard = document.getElementById('job-card');
-        jobCard.classList.add('active');
+        const jobIdDisplay = document.getElementById('job-id-display');
+        
+        if (idleCard) idleCard.style.display = 'none';
+        if (jobCard) jobCard.classList.add('active');
+        if (jobIdDisplay) jobIdDisplay.textContent = `#${job.id.slice(0, 4).toUpperCase()}`;
+
         document.getElementById('job-details').textContent = job.details;
-        document.getElementById('job-qty').textContent = `${job.quantity} étiquette${job.quantity > 1 ? 's' : ''}`;
-        document.getElementById('job-barcode').textContent = `Code-barres : ${job.barcode}`;
+        document.getElementById('job-qty').textContent = `${job.quantity} UNITÉS`;
+        document.getElementById('job-barcode').textContent = job.barcode;
 
         // 3. Build print zone
         const printZone = document.getElementById('print-zone');
@@ -507,9 +422,9 @@
         addToHistory(job);
 
         // 8. Reset UI after short delay
-        await new Promise(r => setTimeout(r, 1500));
-        jobCard.classList.remove('active');
-        document.getElementById('idle-card').style.opacity = '1';
+        await new Promise(r => setTimeout(r, 2000));
+        if (jobCard) jobCard.classList.remove('active');
+        if (idleCard) idleCard.style.display = 'flex';
 
         // 9. Process next job
         processNextJob();
@@ -531,8 +446,8 @@
         item.innerHTML = `
             <span class="history-time">${time}</span>
             <span class="history-details">${job.details}</span>
-            <span class="history-qty">×${job.quantity}</span>
-            <span class="history-status">✓ OK</span>
+            <span class="history-qty">${job.quantity}DA</span>
+            <span class="history-status">PASS</span>
         `;
         list.insertBefore(item, list.firstChild);
     }
